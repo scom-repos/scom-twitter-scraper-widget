@@ -31,10 +31,13 @@ interface ITweets {
     views: number;
 }
 
-const BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA';
+const BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF';
 const ACTIVATE_GUEST_API = 'https://api.twitter.com/1.1/guest/activate.json';
 const GET_USER_BY_SCREENAME = 'https://twitter.com/i/api/graphql/G3KGOASz96M-Qu0nwmGXNg/UserByScreenName';
 const GET_TWEETS_BY_USER_ID = 'https://twitter.com/i/api/graphql/H8OOoI-5ZE4NxgRr8lfyWg/UserTweets';
+const GET_TWEET_BY_ID = 'https://twitter.com/i/api/graphql/DJS3BdhUhcaEpZ7B7irJDg/TweetResultByRestId';
+const GET_FOLLOWERS_BY_USER_ID = 'https://twitter.com/i/api/graphql/8_LQHLk29Jl_i_hfSC25AA/Followers';
+const SEARCH_API = 'https://twitter.com/i/api/2/search/adaptive.json';
 
 class ScraperManager {
 
@@ -68,7 +71,9 @@ class ScraperManager {
     }
 
     async getTweetsByUserName(username: string, maxTweets?: number): Promise<ITweets[]> {
+        console.log('getGuestToken')
         const guestToken = await this.getGuestToken();
+        console.log('guestToken', guestToken)
         if (!guestToken) return null;
         const userId = await this.getUserIdByUserName(username);
         if (!userId)
@@ -109,11 +114,104 @@ class ScraperManager {
                 'x-guest-token': guestToken
             }
         });
-        if(!response.ok) return null;
+        if (!response.ok) return null;
         const result = await response.json();
         const tweets = this.parseTimelineTweetsV2(result);
         return tweets;
     }
+
+
+    async getTweetByTweetId(tweetId: string): Promise<ITweets> {
+        const guestToken = await this.getGuestToken();
+        if (!guestToken) return null;
+        const variables = encodeURIComponent(JSON.stringify({
+            "tweetId": tweetId,
+            "includePromotedContent": false,
+            "withCommunity": false,
+            "withVoice": false,
+        }));
+        const features = encodeURIComponent(JSON.stringify({
+            "creator_subscriptions_tweet_preview_api_enabled": true,
+            "tweetypie_unmention_optimization_enabled": true,
+            "responsive_web_edit_tweet_api_enabled": true,
+            "graphql_is_translatable_rweb_tweet_is_translatable_enabled": true,
+            "view_counts_everywhere_api_enabled": true,
+            "longform_notetweets_consumption_enabled": true,
+            "responsive_web_twitter_article_tweet_consumption_enabled": false,
+            "tweet_awards_web_tipping_enabled": false,
+            "freedom_of_speech_not_reach_fetch_enabled": true,
+            "standardized_nudges_misinfo": true,
+            "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": true,
+            "longform_notetweets_rich_text_read_enabled": true,
+            "longform_notetweets_inline_media_enabled": true,
+            "responsive_web_graphql_exclude_directive_enabled": true,
+            "verified_phone_label_enabled": false,
+            "responsive_web_media_download_video_enabled": false,
+            "responsive_web_graphql_skip_user_profile_image_extensions_enabled": false,
+            "responsive_web_graphql_timeline_navigation_enabled": true,
+            "responsive_web_enhance_cards_enabled": false
+        }));
+        const response = await fetch(`${GET_TWEET_BY_ID}?variables=${variables}&features=${features}`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${BEARER_TOKEN}`,
+                'x-guest-token': guestToken
+            }
+        });
+        if (!response.ok) return null;
+        const result = await response.json();
+        const data = this.parseTimelineEntryItemContentRaw(result.data, tweetId);
+        return data;
+    }
+
+    async getFollowersByUserId(userId: string, count?: number) {
+        const guestToken = await this.getGuestToken();
+        if (!guestToken) return null;
+        const variables = encodeURIComponent(JSON.stringify({
+            "userId": userId,
+            "count": count ?? 20,
+            "includePromotedContent": false,
+            "withSuperFollowsUserFields": true,
+            "withDownvotePerspective": false,
+            "withReactionsMetadata": false,
+            "withReactionsPerspective": false,
+            "withSuperFollowsTweetFields": true,
+            "__fs_interactive_text": false,
+            "__fs_responsive_web_uc_gql_enabled": false,
+            "__fs_dont_mention_me_view_api_enabled": false
+        }));
+        const features = encodeURIComponent(JSON.stringify({
+            "responsive_web_graphql_exclude_directive_enabled": true,
+            "verified_phone_label_enabled": false,
+            "creator_subscriptions_tweet_preview_api_enabled": true,
+            "responsive_web_graphql_timeline_navigation_enabled": true,
+            "responsive_web_graphql_skip_user_profile_image_extensions_enabled": false,
+            "tweetypie_unmention_optimization_enabled": true,
+            "responsive_web_edit_tweet_api_enabled": true,
+            "graphql_is_translatable_rweb_tweet_is_translatable_enabled": true,
+            "view_counts_everywhere_api_enabled": true,
+            "longform_notetweets_consumption_enabled": true,
+            "responsive_web_twitter_article_tweet_consumption_enabled": false,
+            "tweet_awards_web_tipping_enabled": false,
+            "freedom_of_speech_not_reach_fetch_enabled": true,
+            "standardized_nudges_misinfo": true,
+            "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": true,
+            "longform_notetweets_rich_text_read_enabled": true,
+            "longform_notetweets_inline_media_enabled": true,
+            "responsive_web_media_download_video_enabled": false,
+            "responsive_web_enhance_cards_enabled": false
+        }));
+        const response = await fetch(`${GET_FOLLOWERS_BY_USER_ID}?variables=${variables}&features=${features}`, {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${BEARER_TOKEN}`,
+                'x-guest-token': guestToken
+            }
+        });
+        console.log('response', response)
+        if (!response.ok) return null;
+    }
+
 
     private async getGuestToken(): Promise<string> {
         const response = await fetch(ACTIVATE_GUEST_API, {

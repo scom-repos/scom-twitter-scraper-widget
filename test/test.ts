@@ -15,13 +15,22 @@ import ScraperManager from "../src/managers/scraperManager";
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
             const tweets = await scraperManager.getTweetsByUserName(username, maxTweets);
+            console.log(tweets);
             break;
         }
-        case 'sync-tweets-to-nostr': {
-            // const username = args[1];
-            // const tweets = await getTweetsByUsername(username);
+        case 'get-tweet': {
+            const tweetId = args[1];
+            const tweet = await scraperManager.getTweetByTweetId(tweetId);
+            console.log(tweet);
             break;
         }
+        // case 'get-followers': {
+        //     const userId = args[1];
+        //     const count = args[2] ? parseInt(args[2]) : 20;
+        //     const followers = await scraperManager.getFollowersByUserId(userId);
+        //     console.log('followers', followers);
+        //     break;
+        // }
         default:
             break;
     }
