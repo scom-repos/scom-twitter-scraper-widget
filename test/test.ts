@@ -24,6 +24,20 @@ import ScraperManager from "../src/managers/scraperManager";
             console.log(tweet);
             break;
         }
+        case 'get-followers': {
+            const username = args[1];
+            const configs = process.argv.slice(3);
+            const credentials: any = {};
+            for(let i = 0; i < configs.length; i++) {
+                if(configs[i] === '-u' && !!configs[i+1]) {
+                    credentials.username = configs[i+1];
+                }
+                else if(configs[i] === '-p' && !!configs[i+1]) {
+                    credentials.password = configs[i+1];
+                }
+            }
+            const followers = await scraperManager.getFollowersByUserName(username, {username: 'CheukJohnn835', password: 'Since1994'});
+        }
         // case 'get-followers': {
         //     const userId = args[1];
         //     const count = args[2] ? parseInt(args[2]) : 20;

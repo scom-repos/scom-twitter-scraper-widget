@@ -1,3 +1,14 @@
+import Auth from "../utils/auth";
+import {objectToParams} from "../utils";
+import {
+    BEARER_TOKEN,
+    GET_FOLLOWERS_BY_USER_ID,
+    GET_TWEET_BY_ID,
+    GET_TWEETS_BY_USER_ID,
+    GET_USER_BY_SCREENAME
+} from "../const";
+import Cookie from "../utils/cookie";
+
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
     getTweetsByUserName: (username: string) => Promise<string>;
@@ -31,18 +42,30 @@ interface ITweets {
     views: number;
 }
 
-const BEARER_TOKEN = 'AAAAAAAAAAAAAAAAAAAAAFQODgEAAAAAVHTp76lzh3rFzcHbmHVvQxYYpTw%3DckAlMINMjmCwxUcaXbAN4XqJVdgMJaHqNOFgPMK0zN1qLqLQCF';
-const ACTIVATE_GUEST_API = 'https://api.twitter.com/1.1/guest/activate.json';
-const GET_USER_BY_SCREENAME = 'https://twitter.com/i/api/graphql/G3KGOASz96M-Qu0nwmGXNg/UserByScreenName';
-const GET_TWEETS_BY_USER_ID = 'https://twitter.com/i/api/graphql/H8OOoI-5ZE4NxgRr8lfyWg/UserTweets';
-const GET_TWEET_BY_ID = 'https://twitter.com/i/api/graphql/DJS3BdhUhcaEpZ7B7irJDg/TweetResultByRestId';
-const GET_FOLLOWERS_BY_USER_ID = 'https://twitter.com/i/api/graphql/8_LQHLk29Jl_i_hfSC25AA/Followers';
-const SEARCH_API = 'https://twitter.com/i/api/2/search/adaptive.json';
+
+
+
+interface ICredential {
+    username: string;
+    password: string;
+
+}
 
 class ScraperManager {
+    private auth: Auth;
+    private cookie: Cookie;
+
+    constructor() {
+        this.cookie = new Cookie();
+        this.auth = new Auth(this.cookie);
+    }
 
     async getUserIdByUserName(username: string): Promise<string> {
-        const variables = encodeURIComponent(JSON.stringify({'screen_name': username, withSafetyModeUserFields: true}));
+        await this.auth.updateGuestToken();
+        const guestToken = this.auth.getGuestToken();
+        if(!guestToken) return null;
+
+        const variables = objectToParams({'screen_name': username, withSafetyModeUserFields: true})
         const features = encodeURIComponent(JSON.stringify({
             hidden_profile_likes_enabled: false,
             hidden_profile_subscriptions_enabled: false,
@@ -56,7 +79,7 @@ class ScraperManager {
             responsive_web_graphql_timeline_navigation_enabled: true,
         }))
         const fieldToggles = encodeURIComponent(JSON.stringify({withAuxiliaryUserLabels: false}));
-        const guestToken = await this.getGuestToken();
+
         if (!guestToken) return null;
         const response = await fetch(`${GET_USER_BY_SCREENAME}?variables=${variables}&features=${features}&fieldToggles=${fieldToggles}`, {
             method: 'GET',
@@ -71,9 +94,8 @@ class ScraperManager {
     }
 
     async getTweetsByUserName(username: string, maxTweets?: number): Promise<ITweets[]> {
-        console.log('getGuestToken')
-        const guestToken = await this.getGuestToken();
-        console.log('guestToken', guestToken)
+        await this.auth.updateGuestToken();
+        const guestToken = this.auth.getGuestToken();
         if (!guestToken) return null;
         const userId = await this.getUserIdByUserName(username);
         if (!userId)
@@ -120,9 +142,9 @@ class ScraperManager {
         return tweets;
     }
 
-
     async getTweetByTweetId(tweetId: string): Promise<ITweets> {
-        const guestToken = await this.getGuestToken();
+        await this.auth.updateGuestToken();
+        const guestToken = this.auth.getGuestToken();
         if (!guestToken) return null;
         const variables = encodeURIComponent(JSON.stringify({
             "tweetId": tweetId,
@@ -164,9 +186,23 @@ class ScraperManager {
         return data;
     }
 
-    async getFollowersByUserId(userId: string, count?: number) {
-        const guestToken = await this.getGuestToken();
+    async getFollowersByUserName(username: string, credentials: ICredential, count?: number) {
+        const userId = await this.getUserIdByUserName(username);
+        if(!userId) return null;
+        return this.getFollowersByUserId(userId, credentials, count);
+    }
+
+    async getFollowersByUserId(userId: string, credentials: ICredential, count?: number) {
+        await this.auth.updateGuestToken();
+        const guestToken = this.auth.getGuestToken();
         if (!guestToken) return null;
+
+        // Sign In
+        console.log('before login');
+        await this.login(credentials.username, credentials.password);
+        console.log('after login');
+        
+
         const variables = encodeURIComponent(JSON.stringify({
             "userId": userId,
             "count": count ?? 20,
@@ -210,20 +246,285 @@ class ScraperManager {
         });
         console.log('response', response)
         if (!response.ok) return null;
+        const result = await response.json();
+        console.log('followers', result);
     }
 
 
-    private async getGuestToken(): Promise<string> {
-        const response = await fetch(ACTIVATE_GUEST_API, {
+    async initLogin() {
+        return await this.executeFlowTask({
+            flow_name: 'login',
+            input_flow_data: {
+                flow_context: {
+                    debug_overrides: {},
+                    start_location: {
+                        location: 'splash_screen',
+                    },
+                },
+            },
+        });
+    }
+
+    async login(username: string, password: string, email?: string, twoFactorSecret?: string) {
+        await this.auth.updateGuestToken();
+        let next = await this.initLogin();
+        while ('subtask' in next && next.subtask) {
+            if (next.subtask.subtask_id === 'LoginJsInstrumentationSubtask') {
+                next = await this.handleJsInstrumentationSubtask(next);
+            }
+            else if (next.subtask.subtask_id === 'LoginEnterUserIdentifierSSO') {
+                next = await this.handleEnterUserIdentifierSSO(next, username);
+            }
+            else if (next.subtask.subtask_id === 'LoginEnterPassword') {
+                next = await this.handleEnterPassword(next, password);
+            }
+            else if (next.subtask.subtask_id === 'AccountDuplicationCheck') {
+                next = await this.handleAccountDuplicationCheck(next);
+            }
+            else if(next.subtask.subtask_id === 'LoginEnterAlternateIdentifierSubtask') {
+                next = await this.handleEnterAlternateIdentifierSubtask(next, username);
+            }
+            // else if (next.subtask.subtask_id === 'LoginTwoFactorAuthChallenge') {
+            //     if (twoFactorSecret) {
+            //         next = await this.handleTwoFactorAuthChallenge(next, twoFactorSecret);
+            //     }
+            //     else {
+            //         throw new Error('Requested two factor authentication code but no secret provided');
+            //     }
+            // }
+            else if (next.subtask.subtask_id === 'LoginAcid') {
+                next = await this.handleAcid(next, email);
+            }
+            else if (next.subtask.subtask_id === 'LoginSuccessSubtask') {
+                next = await this.handleSuccessSubtask(next);
+            }
+            else {
+                throw new Error(`Unknown subtask ${next.subtask.subtask_id}`);
+            }
+        }
+        if ('err' in next) {
+            throw next.err;
+        }
+    }
+
+    async logout() {
+        if (!this.isLoggedIn()) {
+            return;
+        }
+        const response = await fetch('https://api.twitter.com/1.1/account/logout.json', {
             method: 'POST',
             headers: {
                 authorization: `Bearer ${BEARER_TOKEN}`,
+                // 'x-guest-token': guestToken
             }
         });
-        if (response.ok) {
-            const result = await response.json();
-            return result['guest_token'];
-        } else return null;
+        // this.deleteToken();
+        // this.jar = new tough_cookie_1.CookieJar();
+    }
+
+    async isLoggedIn() {
+        // const res = await (0, api_1.requestApi)('https://api.twitter.com/1.1/account/verify_credentials.json', this);
+        const response = await fetch('https://api.twitter.com/1.1/account/verify_credentials.json', {
+            method: 'GET',
+            headers: {
+                authorization: `Bearer ${BEARER_TOKEN}`
+            }
+        })
+        if (!response.ok) {
+            return false;
+        }
+        const result = await response.json();
+        const { value: verify } = result;
+        return verify && !verify.errors?.length;
+    }
+
+    // Flow Task
+    async handleJsInstrumentationSubtask(prev) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [
+                {
+                    subtask_id: 'LoginJsInstrumentationSubtask',
+                    js_instrumentation: {
+                        response: '{}',
+                        link: 'next_link',
+                    },
+                },
+            ],
+        });
+    }
+    async handleEnterUserIdentifierSSO(prev, username) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [
+                {
+                    subtask_id: 'LoginEnterUserIdentifierSSO',
+                    settings_list: {
+                        setting_responses: [
+                            {
+                                key: 'user_identifier',
+                                response_data: {
+                                    text_data: { result: username },
+                                },
+                            },
+                        ],
+                        link: 'next_link',
+                    },
+                },
+            ],
+        });
+    }
+    async handleEnterPassword(prev, password) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [
+                {
+                    subtask_id: 'LoginEnterPassword',
+                    enter_password: {
+                        password,
+                        link: 'next_link',
+                    },
+                },
+            ],
+        });
+    }
+    async handleAccountDuplicationCheck(prev) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [
+                {
+                    subtask_id: 'AccountDuplicationCheck',
+                    check_logged_in_account: {
+                        link: 'AccountDuplicationCheck_false',
+                    },
+                },
+            ],
+        });
+    }
+    async handleEnterAlternateIdentifierSubtask(prev, username) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [{
+                enter_text: {
+                    link: 'next_link',
+                    text: username// or phone number
+                },
+                subtask_id: 'LoginEnterAlternateIdentifierSubtask'
+            }]
+        })
+    }
+    // async handleTwoFactorAuthChallenge(prev, secret) {
+    //     const totp = new OTPAuth.TOTP({ secret });
+    //     let error;
+    //     for (let attempts = 1; attempts < 4; attempts += 1) {
+    //         try {
+    //             return await this.executeFlowTask({
+    //                 flow_token: prev.flowToken,
+    //                 subtask_inputs: [
+    //                     {
+    //                         subtask_id: 'LoginTwoFactorAuthChallenge',
+    //                         enter_text: {
+    //                             link: 'next_link',
+    //                             text: totp.generate(),
+    //                         },
+    //                     },
+    //                 ],
+    //             });
+    //         }
+    //         catch (err) {
+    //             error = err;
+    //             await new Promise((resolve) => setTimeout(resolve, 2000 * attempts));
+    //         }
+    //     }
+    //     throw error;
+    // }
+    async handleAcid(prev, email) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [
+                {
+                    subtask_id: 'LoginAcid',
+                    enter_text: {
+                        text: email,
+                        link: 'next_link',
+                    },
+                },
+            ],
+        });
+    }
+    async handleSuccessSubtask(prev) {
+        return await this.executeFlowTask({
+            flow_token: prev.flowToken,
+            subtask_inputs: [],
+        });
+    }
+    // async installCsrfToken(headers) {
+    //     const cookies = await this.jar.getCookies('https://twitter.com');
+    //     const xCsrfToken = cookies.find((cookie) => cookie.key === 'ct0');
+    //     if (xCsrfToken) {
+    //         headers.set('x-csrf-token', xCsrfToken.value);
+    //     }
+    // }
+    async executeFlowTask(data) {
+        const onboardingTaskUrl = 'https://api.twitter.com/1.1/onboarding/task.json';
+        const guestToken = this.auth.getGuestToken();
+        if (guestToken == null) {
+            throw new Error('Authentication token is null or undefined.');
+        }
+        const headers = {
+            authorization: `Bearer ${BEARER_TOKEN}`,
+            cookie: this.cookie.getCookieExtensionStr(),
+            'content-type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Linux; Android 11; Nokia G20) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.88 Mobile Safari/537.36',
+            'x-guest-token': guestToken,
+            'x-twitter-auth-type': 'OAuth2Client',
+            'x-twitter-active-user': 'yes',
+            'x-twitter-client-language': 'en',
+        };
+        const ct0 = this.cookie.getExtByKey('ct0');
+        if(ct0) {
+            headers['x-csrf-token'] = ct0;
+        }
+        const res = await fetch(onboardingTaskUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data),
+        });
+        console.log(data, res.ok)
+
+        // await (0, requests_1.updateCookieJar)(this.jar, res.headers);
+        if (!res.ok) {
+            return { status: 'error', err: new Error(await res.text()) };
+        }
+        this.cookie.updateCookie(res.headers.get('set-cookie'))
+        const flow = await res.json();
+        if (flow?.flow_token == null) {
+            return { status: 'error', err: new Error('flow_token not found.') };
+        }
+        if (flow.errors?.length) {
+            return {
+                status: 'error',
+                err: new Error(`Authentication error (${flow.errors[0].code}): ${flow.errors[0].message}`),
+            };
+        }
+        if (typeof flow.flow_token !== 'string') {
+            return {
+                status: 'error',
+                err: new Error('flow_token was not a string.'),
+            };
+        }
+        const subtask = flow.subtasks?.length ? flow.subtasks[0] : undefined;
+        if (subtask && subtask.subtask_id === 'DenyLoginSubtask') {
+            return {
+                status: 'error',
+                err: new Error('Authentication error: DenyLoginSubtask'),
+            };
+        }
+        return {
+            status: 'success',
+            subtask,
+            flowToken: flow.flow_token,
+        };
     }
 
     // Result Parser
