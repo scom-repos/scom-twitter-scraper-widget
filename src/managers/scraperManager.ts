@@ -8,6 +8,7 @@ import {
     GET_USER_BY_SCREENAME
 } from "../const";
 import Cookie from "../utils/cookie";
+import Parser from "../utils/parser";
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
@@ -42,20 +43,18 @@ interface ITweets {
     views: number;
 }
 
-
-
-
 interface ICredential {
     username: string;
     password: string;
-
 }
 
 class ScraperManager {
+    private parser: Parser;
     private auth: Auth;
     private cookie: Cookie;
 
     constructor() {
+        this.parser = new Parser();
         this.cookie = new Cookie();
         this.auth = new Auth(this.cookie);
     }
@@ -100,15 +99,15 @@ class ScraperManager {
         const userId = await this.getUserIdByUserName(username);
         if (!userId)
             return null;
-        const variables = encodeURIComponent(JSON.stringify({
+        const variables = objectToParams({
             count: maxTweets ?? 200,
             includePromotedContent: true,
             userId,
             withQuickPromoteEligibilityTweetFields: true,
             withV2Timeline: true,
             withVoice: true
-        }))
-        const features = encodeURIComponent(JSON.stringify({
+        })
+        const features = objectToParams({
             "responsive_web_graphql_exclude_directive_enabled": true,
             "verified_phone_label_enabled": false,
             "creator_subscriptions_tweet_preview_api_enabled": true,
@@ -128,7 +127,7 @@ class ScraperManager {
             "longform_notetweets_inline_media_enabled": true,
             "responsive_web_media_download_video_enabled": false,
             "responsive_web_enhance_cards_enabled": false
-        }));
+        })
         const response = await fetch(`${GET_TWEETS_BY_USER_ID}?variables=${variables}&features=${features}`, {
             method: 'GET',
             headers: {
@@ -138,21 +137,22 @@ class ScraperManager {
         });
         if (!response.ok) return null;
         const result = await response.json();
-        const tweets = this.parseTimelineTweetsV2(result);
+        const tweets = this.parser.parseTimelineTweetsV2(result);
         return tweets;
     }
 
     async getTweetByTweetId(tweetId: string): Promise<ITweets> {
+        // await this.login('CheukJohnn835', 'Since1994');
         await this.auth.updateGuestToken();
         const guestToken = this.auth.getGuestToken();
-        if (!guestToken) return null;
-        const variables = encodeURIComponent(JSON.stringify({
+        // if (!guestToken) return null;
+        const variables = objectToParams({
             "tweetId": tweetId,
             "includePromotedContent": false,
             "withCommunity": false,
             "withVoice": false,
-        }));
-        const features = encodeURIComponent(JSON.stringify({
+        });
+        const features = objectToParams({
             "creator_subscriptions_tweet_preview_api_enabled": true,
             "tweetypie_unmention_optimization_enabled": true,
             "responsive_web_edit_tweet_api_enabled": true,
@@ -172,17 +172,18 @@ class ScraperManager {
             "responsive_web_graphql_skip_user_profile_image_extensions_enabled": false,
             "responsive_web_graphql_timeline_navigation_enabled": true,
             "responsive_web_enhance_cards_enabled": false
-        }));
+        });
         const response = await fetch(`${GET_TWEET_BY_ID}?variables=${variables}&features=${features}`, {
             method: 'GET',
             headers: {
                 authorization: `Bearer ${BEARER_TOKEN}`,
-                'x-guest-token': guestToken
+                'x-guest-token': guestToken,
+                // cookie: this.cookie.getCookieExtensionStr()
             }
         });
         if (!response.ok) return null;
         const result = await response.json();
-        const data = this.parseTimelineEntryItemContentRaw(result.data, tweetId);
+        const data = this.parser.parseTimelineEntryItemContentRaw(result.data, tweetId);
         return data;
     }
 
@@ -193,15 +194,8 @@ class ScraperManager {
     }
 
     async getFollowersByUserId(userId: string, credentials: ICredential, count?: number) {
-        await this.auth.updateGuestToken();
-        const guestToken = this.auth.getGuestToken();
-        if (!guestToken) return null;
-
         // Sign In
-        console.log('before login');
         await this.login(credentials.username, credentials.password);
-        console.log('after login');
-        
 
         const variables = encodeURIComponent(JSON.stringify({
             "userId": userId,
@@ -212,6 +206,8 @@ class ScraperManager {
             "withReactionsMetadata": false,
             "withReactionsPerspective": false,
             "withSuperFollowsTweetFields": true,
+            "withTweetQuoteCount": true,
+            "withBirdwatchPivots": true,
             "__fs_interactive_text": false,
             "__fs_responsive_web_uc_gql_enabled": false,
             "__fs_dont_mention_me_view_api_enabled": false
@@ -237,19 +233,52 @@ class ScraperManager {
             "responsive_web_media_download_video_enabled": false,
             "responsive_web_enhance_cards_enabled": false
         }));
+        const headers = {
+            authorization: `Bearer ${BEARER_TOKEN}`,
+            cookie: this.cookie.getCookieExtensionStr(),
+        }
+        this.installCsrfToken(headers);
         const response = await fetch(`${GET_FOLLOWERS_BY_USER_ID}?variables=${variables}&features=${features}`, {
             method: 'GET',
-            headers: {
-                authorization: `Bearer ${BEARER_TOKEN}`,
-                'x-guest-token': guestToken
-            }
+            headers
         });
-        console.log('response', response)
-        if (!response.ok) return null;
+        if (!response.ok) {
+            console.log('Failed to fetch followers', await response.text())
+        }
         const result = await response.json();
-        console.log('followers', result);
+        console.log('result', result.data.user.result.timeline);
+        const timeline = this.parser.parseRelationshipTimeline(result);
+        const followers = await this.getUserTimeline(20, timeline);
+        return followers;
     }
 
+    private async getUserTimeline(maxProfiles: number = 20, fetchFunc: () => Promise<any>) {
+        let nProfiles = 0;
+        let cursor = undefined;
+        let consecutiveEmptyBatches = 0;
+        while (nProfiles < maxProfiles) {
+            const batch = await fetchFunc();
+            console.log('batch', batch)
+            const { profiles, next } = batch;
+            cursor = next;
+            if (profiles.length === 0) {
+                consecutiveEmptyBatches++;
+                if (consecutiveEmptyBatches > 5)
+                    break;
+            }
+            else
+                consecutiveEmptyBatches = 0;
+            for (const profile of profiles) {
+                if (nProfiles < maxProfiles)
+                    return profile;
+                else
+                    break;
+                nProfiles++;
+            }
+            if (!next)
+                break;
+        }
+    }
 
     async initLogin() {
         return await this.executeFlowTask({
@@ -458,13 +487,12 @@ class ScraperManager {
             subtask_inputs: [],
         });
     }
-    // async installCsrfToken(headers) {
-    //     const cookies = await this.jar.getCookies('https://twitter.com');
-    //     const xCsrfToken = cookies.find((cookie) => cookie.key === 'ct0');
-    //     if (xCsrfToken) {
-    //         headers.set('x-csrf-token', xCsrfToken.value);
-    //     }
-    // }
+    installCsrfToken(headers) {
+        const ct0 = this.cookie.getExtByKey('ct0');
+        if(ct0) {
+            headers['x-csrf-token'] = ct0;
+        }
+    }
     async executeFlowTask(data) {
         const onboardingTaskUrl = 'https://api.twitter.com/1.1/onboarding/task.json';
         const guestToken = this.auth.getGuestToken();
@@ -481,16 +509,12 @@ class ScraperManager {
             'x-twitter-active-user': 'yes',
             'x-twitter-client-language': 'en',
         };
-        const ct0 = this.cookie.getExtByKey('ct0');
-        if(ct0) {
-            headers['x-csrf-token'] = ct0;
-        }
+        this.installCsrfToken(headers);
         const res = await fetch(onboardingTaskUrl, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(data),
         });
-        console.log(data, res.ok)
 
         // await (0, requests_1.updateCookieJar)(this.jar, res.headers);
         if (!res.ok) {
@@ -525,315 +549,6 @@ class ScraperManager {
             subtask,
             flowToken: flow.flow_token,
         };
-    }
-
-    // Result Parser
-    private reconstructTweetHtml(tweet: any, photos: any, videos: any) {
-        const reHashtag = /\B(\#\S+\b)/g;
-        const reCashtag = /\B(\$\S+\b)/g;
-        const reTwitterUrl = /https:(\/\/t\.co\/([A-Za-z0-9]|[A-Za-z]){10})/g;
-        const reUsername = /\B(\@\S{1,15}\b)/g;
-
-        function linkHashtagHtml(hashtag: string) {
-            return `<a href="https://twitter.com/hashtag/${hashtag.replace('#', '')}">${hashtag}</a>`;
-        }
-
-        function linkCashtagHtml(cashtag: string) {
-            return `<a href="https://twitter.com/search?q=%24${cashtag.replace('$', '')}">${cashtag}</a>`;
-        }
-
-        function linkUsernameHtml(username: string) {
-            return `<a href="https://twitter.com/${username.replace('@', '')}">${username}</a>`;
-        }
-
-        function unwrapTcoUrlHtml(tweet: any, foundedMedia: any[]) {
-            return function (tco: string) {
-                for (const entity of tweet.entities?.urls ?? []) {
-                    if (tco === entity.url && entity.expanded_url != null) {
-                        return `<a href="${entity.expanded_url}">${tco}</a>`;
-                    }
-                }
-                for (const entity of tweet.extended_entities?.media ?? []) {
-                    if (tco === entity.url && entity.media_url_https != null) {
-                        foundedMedia.push(entity.media_url_https);
-                        return `<br><a href="${tco}"><img src="${entity.media_url_https}"/></a>`;
-                    }
-                }
-                return tco;
-            };
-        }
-
-        const media: any[] = [];
-        // HTML parsing with regex :)
-        let html = tweet.full_text ?? '';
-        html = html.replace(reHashtag, linkHashtagHtml);
-        html = html.replace(reCashtag, linkCashtagHtml);
-        html = html.replace(reUsername, linkUsernameHtml);
-        html = html.replace(reTwitterUrl, unwrapTcoUrlHtml(tweet, media));
-        for (const {url} of photos) {
-            if (media.indexOf(url) !== -1) {
-                continue;
-            }
-            html += `<br><img src="${url}"/>`;
-        }
-        for (const {preview: url} of videos) {
-            if (media.indexOf(url) !== -1) {
-                continue;
-            }
-            html += `<br><img src="${url}"/>`;
-        }
-        html = html.replace(/\n/g, '<br>');
-        return html;
-    }
-
-    private parseVideo(m: any) {
-        const video: any = {
-            id: m.id_str,
-            preview: m.media_url_https,
-        };
-        let maxBitrate = 0;
-        const variants = m.video_info?.variants ?? [];
-        for (const variant of variants) {
-            const bitrate = variant.bitrate;
-            if (bitrate != null && bitrate > maxBitrate && variant.url != null) {
-                let variantUrl = variant.url;
-                const stringStart = 0;
-                const tagSuffixIdx = variantUrl.indexOf('?tag=10');
-                if (tagSuffixIdx !== -1) {
-                    variantUrl = variantUrl.substring(stringStart, tagSuffixIdx + 1);
-                }
-                video.url = variantUrl;
-                maxBitrate = bitrate;
-            }
-        }
-        return video;
-    }
-
-    private parseMediaGroups(media: any) {
-        const photos = [];
-        const videos = [];
-        let sensitiveContent = undefined;
-        for (const m of media
-            .filter((m: any) => m['id_str'] != null)
-            .filter((m: any) => m['media_url_https'] != null)) {
-            if (m.type === 'photo') {
-                photos.push({
-                    id: m.id_str,
-                    url: m.media_url_https,
-                    alt_text: m.ext_alt_text,
-                });
-            } else if (m.type === 'video') {
-                videos.push(this.parseVideo(m));
-            }
-            const sensitive = m.ext_sensitive_media_warning;
-            if (sensitive != null) {
-                sensitiveContent =
-                    sensitive.adult_content ||
-                    sensitive.graphic_violence ||
-                    sensitive.other;
-            }
-        }
-        return {sensitiveContent, photos, videos};
-    }
-
-    private parseLegacyTweet(user: any, tweet: any) {
-        if (tweet == null) {
-            return {
-                success: false,
-                err: new Error('Tweet was not found in the timeline object.'),
-            };
-        }
-        if (user == null) {
-            return {
-                success: false,
-                err: new Error('User was not found in the timeline object.'),
-            };
-        }
-        if (!tweet.id_str) {
-            if (!tweet.conversation_id_str) {
-                return {
-                    success: false,
-                    err: new Error('Tweet ID was not found in object.'),
-                };
-            }
-            tweet.id_str = tweet.conversation_id_str;
-        }
-        const hashtags = tweet.entities?.hashtags ?? [];
-        const mentions = tweet.entities?.user_mentions ?? [];
-        const media = tweet.extended_entities?.media ?? [];
-        const pinnedTweets = new Set(user.pinned_tweet_ids_str ?? []);
-        const urls = tweet.entities?.urls ?? [];
-        const {photos, videos, sensitiveContent} = this.parseMediaGroups(media);
-        const tw: any = {
-            conversationId: tweet.conversation_id_str,
-            id: tweet.id_str,
-            hashtags: hashtags
-                .filter((hashtag: any) => hashtag['text'] != null)
-                .map((hashtag: any) => hashtag.text),
-            likes: tweet.favorite_count,
-            mentions: mentions.filter((mention: any) => mention['id_str'] != null).map((mention: any) => ({
-                id: mention.id_str,
-                username: mention.screen_name,
-                name: mention.name,
-            })),
-            name: user.name,
-            permanentUrl: `https://twitter.com/${user.screen_name}/status/${tweet.id_str}`,
-            photos,
-            replies: tweet.reply_count,
-            retweets: tweet.retweet_count,
-            text: tweet.full_text,
-            thread: [],
-            urls: urls
-                .filter((url: any) => url['expanded_url'] != null)
-                .map((url: any) => url.expanded_url),
-            userId: tweet.user_id_str,
-            username: user.screen_name,
-            videos,
-            isQuoted: false,
-            isReply: false,
-            isRetweet: false,
-            isPin: false,
-            sensitiveContent: false,
-        };
-        if (tweet.created_at) {
-            tw.timeParsed = new Date(Date.parse(tweet.created_at));
-            tw.timestamp = Math.floor(tw.timeParsed.valueOf() / 1000);
-        }
-        if (tweet.place?.id) {
-            tw.place = tweet.place;
-        }
-        const quotedStatusIdStr = tweet.quoted_status_id_str;
-        const inReplyToStatusIdStr = tweet.in_reply_to_status_id_str;
-        const retweetedStatusIdStr = tweet.retweeted_status_id_str;
-        const retweetedStatusResult = tweet.retweeted_status_result?.result;
-        if (quotedStatusIdStr) {
-            tw.isQuoted = true;
-            tw.quotedStatusId = quotedStatusIdStr;
-        }
-        if (inReplyToStatusIdStr) {
-            tw.isReply = true;
-            tw.inReplyToStatusId = inReplyToStatusIdStr;
-        }
-        if (retweetedStatusIdStr || retweetedStatusResult) {
-            tw.isRetweet = true;
-            tw.retweetedStatusId = retweetedStatusIdStr;
-            if (retweetedStatusResult) {
-                const parsedResult = this.parseLegacyTweet(retweetedStatusResult?.core?.user_results?.result?.legacy, retweetedStatusResult?.legacy);
-                if (parsedResult.success) {
-                    tw.retweetedStatus = parsedResult.tweet;
-                }
-            }
-        }
-        const views = parseInt(tweet.ext_views?.count ?? '');
-        if (!isNaN(views)) {
-            tw.views = views;
-        }
-        if (pinnedTweets.has(tweet.id_str)) {
-            // TODO: Update tests so this can be assigned at the tweet declaration
-            tw.isPin = true;
-        }
-        if (sensitiveContent) {
-            // TODO: Update tests so this can be assigned at the tweet declaration
-            tw.sensitiveContent = true;
-        }
-        tw.html = this.reconstructTweetHtml(tweet, tw.photos, tw.videos);
-        return {success: true, tweet: tw};
-    }
-
-    private parseAndPush(tweets: any, content: any, entryId: any, isConversation = false) {
-        const tweet = this.parseTimelineEntryItemContentRaw(content, entryId, isConversation);
-        if (tweet) {
-            tweets.push(tweet);
-        }
-    }
-
-    private parseTimelineEntryItemContentRaw(content: any, entryId: string, isConversation = false) {
-        const result = content.tweet_results?.result ?? content.tweetResult?.result;
-        if (result?.__typename === 'Tweet') {
-            if (result.legacy) {
-                result.legacy.id_str =
-                    result.rest_id ??
-                    entryId.replace('conversation-', '').replace('tweet-', '');
-            }
-            const tweetResult = this.parseResult(result);
-            if (tweetResult.success) {
-                if (isConversation) {
-                    if (content?.tweetDisplayType === 'SelfThread') {
-                        tweetResult.tweet.isSelfThread = true;
-                    }
-                }
-                return tweetResult.tweet;
-            }
-        }
-        return null;
-    }
-
-    private parseResult(result: any) {
-        const noteTweetResultText = result?.note_tweet?.note_tweet_results?.result?.text;
-        if (result?.legacy && noteTweetResultText) {
-            result.legacy.full_text = noteTweetResultText;
-        }
-        const tweetResult = this.parseLegacyTweet(result?.core?.user_results?.result?.legacy, result?.legacy);
-        if (!tweetResult.success) {
-            return tweetResult;
-        }
-        if (!tweetResult.tweet.views && result?.views?.count) {
-            const views = parseInt(result.views.count);
-            if (!isNaN(views)) {
-                tweetResult.tweet.views = views;
-            }
-        }
-        const quotedResult = result?.quoted_status_result?.result;
-        if (quotedResult) {
-            if (quotedResult.legacy && quotedResult.rest_id) {
-                quotedResult.legacy.id_str = quotedResult.rest_id;
-            }
-            const quotedTweetResult = this.parseResult(quotedResult);
-            if (quotedTweetResult.success) {
-                tweetResult.tweet.quotedStatus = quotedTweetResult.tweet;
-            }
-        }
-        return tweetResult;
-    }
-
-    private parseTimelineTweetsV2(timeline: any): ITweets[] {
-        const expectedEntryTypes = ['tweet', 'profile-conversation'];
-        let bottomCursor;
-        let topCursor;
-        const tweets: ITweets[] = [];
-        const instructions = timeline.data?.user?.result?.timeline_v2?.timeline?.instructions ?? [];
-        for (const instruction of instructions) {
-            const entries = instruction.entries ?? [];
-            for (const entry of entries) {
-                const entryContent = entry.content;
-                if (!entryContent)
-                    continue;
-                // Handle pagination
-                if (entryContent.cursorType === 'Bottom') {
-                    bottomCursor = entryContent.value;
-                    continue;
-                } else if (entryContent.cursorType === 'Top') {
-                    topCursor = entryContent.value;
-                    continue;
-                }
-                const idStr = entry.entryId;
-                if (!expectedEntryTypes.some((entryType) => idStr.startsWith(entryType))) {
-                    continue;
-                }
-                if (entryContent.itemContent) {
-                    // Typically TimelineTimelineTweet entries
-                    this.parseAndPush(tweets, entryContent.itemContent, idStr);
-                } else if (entryContent.items) {
-                    // Typically TimelineTimelineModule entries
-                    for (const item of entryContent.items) {
-                        if (item.item?.itemContent) {
-                            this.parseAndPush(tweets, item.item.itemContent, idStr);
-                        }
-                    }
-                }
-            }
-        }
-        return tweets;
     }
 }
 
