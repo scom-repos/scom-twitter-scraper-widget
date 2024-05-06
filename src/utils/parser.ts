@@ -329,6 +329,7 @@ export default class Parser {
                 const entries = instruction.entries ?? [];
                 for (const entry of entries) {
                     const itemContent = entry.content?.itemContent;
+                    // console.log('itemContent', itemContent)
                     if (itemContent?.userDisplayType === 'User') {
                         const userResultRaw = itemContent.user_results?.result;
                         if (userResultRaw?.legacy) {
@@ -348,6 +349,7 @@ export default class Parser {
                 }
             }
         }
+        console.log('profiles', profiles)
         return { profiles, next: bottomCursor, previous: topCursor };
     }
 
