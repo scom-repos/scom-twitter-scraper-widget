@@ -15,7 +15,7 @@ export default class API {
         this.installCsrfToken(headers);
         const urlParams = new URLSearchParams();
         for(const key in params) {
-            urlParams.set(key, encodeURIComponent(JSON.stringify([key])));
+            urlParams.set(key, JSON.stringify(params[key]));
         }
         const response = await fetch(`${url}?${urlParams.toString()}`, {
             method,
@@ -34,9 +34,8 @@ export default class API {
         };
         const urlParams = new URLSearchParams();
         for(const key in params) {
-            urlParams.set(key, encodeURIComponent(JSON.stringify(params[key])));
+            urlParams.set(key, JSON.stringify(params[key]));
         }
-        console.log('urlParams', urlParams)
         const response = await fetch(`${url}?${urlParams.toString()}`, {
             method,
             headers
