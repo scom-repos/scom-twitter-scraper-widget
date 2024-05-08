@@ -68,11 +68,11 @@ export default class Cookie {
     }
 
     getCookieExtensionStr() {
-        return this.cookie.extensions.join('; ');
+        return this.cookie.extensions?.join('; ') || '';
     }
 
     getExtByKey(key: string) {
-        const data = this.cookie.extensions.filter(extension => extension.split('=')[0].trim().toLowerCase() === key)[0];
+        const data = this.cookie.extensions?.filter(extension => extension.split('=')[0].trim().toLowerCase() === key)[0];
         return data ? data.split('=')[1] : null
     }
 

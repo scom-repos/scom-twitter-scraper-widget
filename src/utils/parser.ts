@@ -386,6 +386,51 @@ export default class Parser {
         return profile;
     }
 
+    parseSearchTimelineUsers(timeline: any) {
+        let bottomCursor;
+        let topCursor;
+        const tweets = [];
+        const instructions = timeline.data?.search_by_raw_query?.search_timeline?.timeline
+            ?.instructions ?? [];
+        for (const instruction of instructions) {
+            if (instruction.type === 'TimelineAddEntries' ||
+                instruction.type === 'TimelineReplaceEntry') {
+                if (instruction.entry?.content?.cursorType === 'Bottom') {
+                    bottomCursor = instruction.entry.content.value;
+                    continue;
+                }
+                else if (instruction.entry?.content?.cursorType === 'Top') {
+                    topCursor = instruction.entry.content.value;
+                    continue;
+                }
+                const entries = instruction.entries ?? [];
+                for (const entry of entries) {
+                    const itemContent = entry.content?.itemContent;
+                    if (itemContent?.tweetDisplayType === 'Tweet') {
+                        const tweetResultRaw = itemContent.tweet_results?.result;
+                        const tweetResult = this.parseLegacyTweet(tweetResultRaw?.core?.user_results?.result?.legacy, tweetResultRaw?.legacy);
+                        if (tweetResult.success) {
+                            if (!tweetResult.tweet.views && tweetResultRaw?.views?.count) {
+                                const views = parseInt(tweetResultRaw.views.count);
+                                if (!isNaN(views)) {
+                                    tweetResult.tweet.views = views;
+                                }
+                            }
+                            tweets.push(tweetResult.tweet);
+                        }
+                    }
+                    else if (entry.content?.cursorType === 'Bottom') {
+                        bottomCursor = entry.content.value;
+                    }
+                    else if (entry.content?.cursorType === 'Top') {
+                        topCursor = entry.content.value;
+                    }
+                }
+            }
+        }
+        return { tweets, next: bottomCursor, previous: topCursor };
+    }
+
     private getAvatarOriginalSizeUrl(avatarUrl: string) {
         return avatarUrl ? avatarUrl.replace('_normal', '') : undefined;
     }
