@@ -36,7 +36,7 @@ import ScraperManager from "../src/managers/scraperManager";
                     credentials.password = configs[i+1];
                 }
             }
-            const followers = await scraperManager.getFollowersByUserName(username, {username: 'CheukJohnn835', password: 'Since1994'});
+            const followers = await scraperManager.getFollowersByUserName(credentials, username);
             console.log('followers', followers);
             break;
         }
@@ -52,7 +52,7 @@ import ScraperManager from "../src/managers/scraperManager";
                     credentials.password = configs[i+1];
                 }
             }
-            const following = await scraperManager.getFollowingByUserName(username, {username: 'CheukJohnn835', password: 'Since1994'});
+            const following = await scraperManager.getFollowingByUserName(credentials, username);
             console.log('following', following);
             break;
         }
@@ -68,7 +68,7 @@ import ScraperManager from "../src/managers/scraperManager";
                     credentials.password = configs[i+1];
                 }
             }
-            const tweets = await scraperManager.searchTweets({username: 'CheukJohnn835', password: 'Since1994'}, query, 50);
+            const tweets = await scraperManager.searchTweets(credentials, query, 50);
             console.log('tweets', tweets);
             break;
         }

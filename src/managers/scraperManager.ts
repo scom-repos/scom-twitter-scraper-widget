@@ -186,7 +186,7 @@ class ScraperManager {
         return this.parser.parseTimelineEntryItemContentRaw(result.data, tweetId);
     }
 
-    async getFollowersByUserName(username: string, credentials: ICredential, count?: number) {
+    async getFollowersByUserName(credentials: ICredential, username: string, count?: number) {
         const userId = await this.getUserIdByScreenName(username);
         if (!userId) return null;
         return this.getFollowersByUserId(credentials, userId, count);
@@ -248,7 +248,7 @@ class ScraperManager {
         return this.parser.parseRelationshipTimeline(result);
     }
 
-    async getFollowingByUserName(username: string, credentials: ICredential, count?: number) {
+    async getFollowingByUserName(credentials: ICredential, username: string, count?: number) {
         const userId = await this.getUserIdByScreenName(username);
         if (!userId) return null;
         return this.getFollowersByUserId(credentials, userId, count);
