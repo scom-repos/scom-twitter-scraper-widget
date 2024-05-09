@@ -1,1 +1,1 @@
-export { TwitterManager } from './managers';
+export { ScraperManager, DataSyncManager } from './managers';

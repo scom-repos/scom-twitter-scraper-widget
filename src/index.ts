@@ -1,3 +1,4 @@
 export {
-    TwitterManager
+    ScraperManager,
+    DataSyncManager
 } from './managers';

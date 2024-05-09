@@ -15,10 +15,10 @@ import ScraperManager from "../src/managers/scraperManager";
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
             const tweets = await scraperManager.getTweetsByUserName(username, maxTweets);
-            console.log(tweets);
+            console.log('tweets', tweets);
             break;
         }
-        case 'get-tweet': {
+        case 'get-tweet-by-id': {
             const tweetId = args[1];
             const tweet = await scraperManager.getTweetByTweetId(tweetId);
             console.log(tweet);
@@ -57,7 +57,7 @@ import ScraperManager from "../src/managers/scraperManager";
             break;
         }
         case 'search-tweets': {
-            const username = args[1];
+            const query = args[1];
             const configs = process.argv.slice(3);
             const credentials: any = {};
             for(let i = 0; i < configs.length; i++) {
@@ -68,7 +68,7 @@ import ScraperManager from "../src/managers/scraperManager";
                     credentials.password = configs[i+1];
                 }
             }
-            const tweets = await scraperManager.searchTweets({username: 'CheukJohnn835', password: 'Since1994'}, '#hiking', 50);
+            const tweets = await scraperManager.searchTweets({username: 'CheukJohnn835', password: 'Since1994'}, query, 50);
             console.log('tweets', tweets);
             break;
         }

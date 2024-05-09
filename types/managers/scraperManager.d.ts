@@ -29,18 +29,31 @@ interface ITweets {
     html: string;
     views: number;
 }
+interface ICredential {
+    username: string;
+    password: string;
+}
 declare class ScraperManager {
-    getUserIdByUserName(username: string): Promise<string>;
+    private parser;
+    private auth;
+    private cookie;
+    private api;
+    constructor();
+    getProfile(username: string): Promise<void>;
+    getUserIdByScreenName(username: string): Promise<string>;
+    searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any>;
+    private fetchSearchTweets;
     getTweetsByUserName(username: string, maxTweets?: number): Promise<ITweets[]>;
-    private getGuestToken;
-    private reconstructTweetHtml;
-    private parseVideo;
-    private parseMediaGroups;
-    private parseLegacyTweet;
-    private parseAndPush;
-    private parseTimelineEntryItemContentRaw;
-    private parseResult;
-    private parseTimelineTweetsV2;
+    getTweetByTweetId(tweetId: string): Promise<ITweets>;
+    getFollowersByUserName(username: string, credentials: ICredential, count?: number): Promise<any>;
+    getFollowersByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;
+    private fetchProfileFollowers;
+    getFollowingByUserName(username: string, credentials: ICredential, count?: number): Promise<any>;
+    getFollowingByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;
+    private fetchProfileFollowering;
+    private getUserTimeline;
+    private getTweetTimeline;
+    private getSearchTimeline;
 }
 export default ScraperManager;
 export { ITweets, IScraperManager };
