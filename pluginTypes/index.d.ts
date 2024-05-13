@@ -83,7 +83,6 @@ declare module "@scom/scom-twitter-sdk/utils/index.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk/utils/parser.ts" />
 declare module "@scom/scom-twitter-sdk/utils/parser.ts" {
-    import { ITweets } from "@scom/scom-twitter-sdk/managers/scraperManager.ts";
     export default class Parser {
         htmlToMarkdown(html: string): string;
         reconstructTweetHtml(tweet: any, photos: any, videos: any): any;
@@ -113,7 +112,7 @@ declare module "@scom/scom-twitter-sdk/utils/parser.ts" {
             tweet: any;
             err?: undefined;
         };
-        parseTimelineTweetsV2(timeline: any): ITweets[];
+        parseTimelineTweetsV2(timeline: any): any[];
         parseRelationshipTimeline(timeline: any): {
             profiles: any[];
             next: any;
@@ -144,37 +143,6 @@ declare module "@scom/scom-twitter-sdk/utils/API.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
 declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
-    interface IScraperManager {
-        getUserIdByUserName: (username: string) => Promise<string>;
-        getTweetsByUserName: (username: string) => Promise<string>;
-    }
-    interface ITweets {
-        conversationId: string;
-        id: string;
-        hashtags: any[];
-        likes: number;
-        mentions: any[];
-        name: string;
-        permanentUrl: string;
-        photos: any[];
-        replies: number;
-        retweets: number;
-        text: string;
-        thread: any[];
-        urls: [];
-        userId: string;
-        username: string;
-        videos: any[];
-        isQuoted: boolean;
-        isReply: boolean;
-        isRetweet: boolean;
-        isPin: boolean;
-        sensitiveContent: boolean;
-        timeParsed: Date;
-        timestamp: number;
-        html: string;
-        views: number;
-    }
     interface ICredential {
         username: string;
         password: string;
@@ -189,38 +157,26 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         getUserIdByScreenName(username: string): Promise<string>;
         searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any>;
         private fetchSearchTweets;
-        getTweetsByUserName(username: string, maxTweets?: number): Promise<ITweets[]>;
-        getTweetByTweetId(tweetId: string): Promise<ITweets>;
-        getFollowersByUserName(username: string, credentials: ICredential, count?: number): Promise<any>;
+        getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
+        getTweetByTweetId(tweetId: string): Promise<any>;
+        getFollowersByUserName(credentials: ICredential, username: string, count?: number): Promise<any>;
         getFollowersByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;
         private fetchProfileFollowers;
-        getFollowingByUserName(username: string, credentials: ICredential, count?: number): Promise<any>;
+        getFollowingByUserName(credentials: ICredential, username: string, count?: number): Promise<any>;
         getFollowingByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;
         private fetchProfileFollowering;
         private getUserTimeline;
         private getTweetTimeline;
         private getSearchTimeline;
     }
-    export default ScraperManager;
-    export { ITweets, IScraperManager };
-}
-/// <amd-module name="@scom/scom-twitter-sdk/managers/dataSyncManager.ts" />
-declare module "@scom/scom-twitter-sdk/managers/dataSyncManager.ts" {
-    export default class DataSyncManager {
-        private scraperManager;
-        constructor();
-        subscribe(): Promise<void>;
-        unSubscribe(): Promise<void>;
-        syncTweetsToNostrByUserId(userName: string): Promise<void>;
-    }
+    export { ScraperManager };
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/index.ts" />
 declare module "@scom/scom-twitter-sdk/managers/index.ts" {
-    import DataSyncManager from "@scom/scom-twitter-sdk/managers/dataSyncManager.ts";
-    import ScraperManager from "@scom/scom-twitter-sdk/managers/scraperManager.ts";
-    export { DataSyncManager, ScraperManager };
+    import { ScraperManager } from "@scom/scom-twitter-sdk/managers/scraperManager.ts";
+    export { ScraperManager };
 }
 /// <amd-module name="@scom/scom-twitter-sdk" />
 declare module "@scom/scom-twitter-sdk" {
-    export { ScraperManager, DataSyncManager } from "@scom/scom-twitter-sdk/managers/index.ts";
+    export { ScraperManager } from "@scom/scom-twitter-sdk/managers/index.ts";
 }

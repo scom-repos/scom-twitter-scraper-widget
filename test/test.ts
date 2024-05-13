@@ -1,10 +1,16 @@
-import ScraperManager from "../src/managers/scraperManager";
+import {ScraperManager} from "../src/managers/scraperManager";
 
 (async () => {
     const scraperManager = new ScraperManager();
     var args = process.argv.slice(2);
     const action = args[0];
     switch(action) {
+        case 'get-profile-by-username': {
+            const username = args[1];
+            const profile = await scraperManager.getProfile(username);
+            console.log('profile', profile)
+            break;
+        }
         case 'get-userid-by-name': {
             const username = args[1];
             const userId = await scraperManager.getUserIdByScreenName(username);

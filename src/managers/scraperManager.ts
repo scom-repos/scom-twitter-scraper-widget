@@ -13,7 +13,7 @@ import API from "../utils/API";
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
-    getTweetsByUserName: (username: string) => Promise<string>;
+    getTweetsByUserName: (username: string) => Promise<any>;
 }
 
 interface ITweets {
@@ -63,7 +63,37 @@ class ScraperManager {
     }
 
     async getProfile(username: string) {
-
+        await this.auth.updateGuestToken();
+        try {
+            const params = {
+                variables: {
+                    'screen_name': username,
+                    withSafetyModeUserFields: true
+                },
+                features: {
+                    hidden_profile_likes_enabled: false,
+                    hidden_profile_subscriptions_enabled: false,
+                    responsive_web_graphql_exclude_directive_enabled: true,
+                    verified_phone_label_enabled: false,
+                    subscriptions_verification_info_is_identity_verified_enabled: false,
+                    subscriptions_verification_info_verified_since_enabled: true,
+                    highlights_tweets_tab_ui_enabled: true,
+                    creator_subscriptions_tweet_preview_api_enabled: true,
+                    responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
+                    responsive_web_graphql_timeline_navigation_enabled: true
+                },
+                fieldToggles: {
+                    withAuxiliaryUserLabels: false
+                }
+            }
+            const result = await this.api.fetchAnonymous(GET_USER_BY_SCREENAME, 'GET', params)
+            const user = result.data.user.result;
+            return this.parser.parseProfile(user.legacy, user.is_blue_verified);
+        }
+        catch(e) {
+            console.log(e);
+            throw e;
+        }
     }
 
     async getUserIdByScreenName(username: string): Promise<string> {
@@ -111,7 +141,7 @@ class ScraperManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    async getTweetsByUserName(username: string, maxTweets?: number): Promise<ITweets[]> {
+    async getTweetsByUserName(username: string, maxTweets?: number) {
         await this.auth.updateGuestToken();
         const userId = await this.getUserIdByScreenName(username);
         if (!userId)
@@ -151,7 +181,7 @@ class ScraperManager {
         return this.parser.parseTimelineTweetsV2(result);
     }
 
-    async getTweetByTweetId(tweetId: string): Promise<ITweets> {
+    async getTweetByTweetId(tweetId: string) {
         await this.auth.updateGuestToken();
         const params = {
             variables: {
@@ -425,5 +455,4 @@ class ScraperManager {
     }
 }
 
-export default ScraperManager;
-export {ITweets, IScraperManager}
+export {ScraperManager}

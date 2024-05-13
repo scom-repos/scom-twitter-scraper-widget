@@ -1,4 +1,4 @@
-import {ITweets} from "../managers/scraperManager";
+// import {ITweets} from "../managers/scraperManager";
 
 export default class Parser {
 
@@ -317,11 +317,11 @@ export default class Parser {
         return tweetResult;
     }
 
-    parseTimelineTweetsV2(timeline: any): ITweets[] {
+    parseTimelineTweetsV2(timeline: any){
         const expectedEntryTypes = ['tweet', 'profile-conversation'];
         let bottomCursor;
         let topCursor;
-        const tweets: ITweets[] = [];
+        const tweets: any[] = [];//: ITweets[] = [];
         const instructions = timeline.data?.user?.result?.timeline_v2?.timeline?.instructions ?? [];
         for (const instruction of instructions) {
             const entries = instruction.entries ?? [];

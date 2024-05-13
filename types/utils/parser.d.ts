@@ -1,4 +1,3 @@
-import { ITweets } from "../managers/scraperManager";
 export default class Parser {
     htmlToMarkdown(html: string): string;
     reconstructTweetHtml(tweet: any, photos: any, videos: any): any;
@@ -28,7 +27,7 @@ export default class Parser {
         tweet: any;
         err?: undefined;
     };
-    parseTimelineTweetsV2(timeline: any): ITweets[];
+    parseTimelineTweetsV2(timeline: any): any[];
     parseRelationshipTimeline(timeline: any): {
         profiles: any[];
         next: any;

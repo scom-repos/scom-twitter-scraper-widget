@@ -569,6 +569,8 @@ define("@scom/scom-twitter-sdk/utils/index.ts", ["require", "exports"], function
     };
     exports.paramsToObject = paramsToObject;
 });
+///<amd-module name='@scom/scom-twitter-sdk/utils/parser.ts'/> 
+// import {ITweets} from "../managers/scraperManager";
 define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -869,7 +871,7 @@ define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], functio
             const expectedEntryTypes = ['tweet', 'profile-conversation'];
             let bottomCursor;
             let topCursor;
-            const tweets = [];
+            const tweets = []; //: ITweets[] = [];
             const instructions = timeline.data?.user?.result?.timeline_v2?.timeline?.instructions ?? [];
             for (const instruction of instructions) {
                 const entries = instruction.entries ?? [];
@@ -1087,6 +1089,7 @@ define("@scom/scom-twitter-sdk/utils/API.ts", ["require", "exports", "@scom/scom
 define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports", "@scom/scom-twitter-sdk/utils/auth.ts", "@scom/scom-twitter-sdk/const.ts", "@scom/scom-twitter-sdk/utils/cookie.ts", "@scom/scom-twitter-sdk/utils/parser.ts", "@scom/scom-twitter-sdk/utils/API.ts"], function (require, exports, auth_1, const_3, cookie_1, parser_1, API_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    exports.ScraperManager = void 0;
     class ScraperManager {
         constructor() {
             this.parser = new parser_1.default();
@@ -1211,7 +1214,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             const result = await this.api.fetchAnonymous(const_3.GET_TWEET_BY_ID, 'GET', params);
             return this.parser.parseTimelineEntryItemContentRaw(result.data, tweetId);
         }
-        async getFollowersByUserName(username, credentials, count) {
+        async getFollowersByUserName(credentials, username, count) {
             const userId = await this.getUserIdByScreenName(username);
             if (!userId)
                 return null;
@@ -1271,7 +1274,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             const result = await this.api.fetch(const_3.GET_FOLLOWERS_BY_USER_ID, 'GET', params);
             return this.parser.parseRelationshipTimeline(result);
         }
-        async getFollowingByUserName(username, credentials, count) {
+        async getFollowingByUserName(credentials, username, count) {
             const userId = await this.getUserIdByScreenName(username);
             if (!userId)
                 return null;
@@ -1444,37 +1447,17 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             return this.api.fetch(const_3.SEARCH_TIMELINE, 'GET', params);
         }
     }
-    exports.default = ScraperManager;
+    exports.ScraperManager = ScraperManager;
 });
-define("@scom/scom-twitter-sdk/managers/dataSyncManager.ts", ["require", "exports", "@scom/scom-twitter-sdk/managers/scraperManager.ts"], function (require, exports, scraperManager_1) {
+define("@scom/scom-twitter-sdk/managers/index.ts", ["require", "exports", "@scom/scom-twitter-sdk/managers/scraperManager.ts"], function (require, exports, scraperManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    class DataSyncManager {
-        constructor() {
-            this.scraperManager = new scraperManager_1.default();
-        }
-        async subscribe() {
-        }
-        async unSubscribe() {
-        }
-        async syncTweetsToNostrByUserId(userName) {
-            const tweets = await this.scraperManager.getTweetsByUserName(userName);
-            console.log('tweets', tweets);
-        }
-    }
-    exports.default = DataSyncManager;
-});
-define("@scom/scom-twitter-sdk/managers/index.ts", ["require", "exports", "@scom/scom-twitter-sdk/managers/dataSyncManager.ts", "@scom/scom-twitter-sdk/managers/scraperManager.ts"], function (require, exports, dataSyncManager_1, scraperManager_2) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ScraperManager = exports.DataSyncManager = void 0;
-    exports.DataSyncManager = dataSyncManager_1.default;
-    exports.ScraperManager = scraperManager_2.default;
+    exports.ScraperManager = void 0;
+    Object.defineProperty(exports, "ScraperManager", { enumerable: true, get: function () { return scraperManager_1.ScraperManager; } });
 });
 define("@scom/scom-twitter-sdk", ["require", "exports", "@scom/scom-twitter-sdk/managers/index.ts"], function (require, exports, managers_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DataSyncManager = exports.ScraperManager = void 0;
+    exports.ScraperManager = void 0;
     Object.defineProperty(exports, "ScraperManager", { enumerable: true, get: function () { return managers_1.ScraperManager; } });
-    Object.defineProperty(exports, "DataSyncManager", { enumerable: true, get: function () { return managers_1.DataSyncManager; } });
 });

@@ -1,4 +1,3 @@
 export {
-    ScraperManager,
-    DataSyncManager
+    ScraperManager
 } from './managers';

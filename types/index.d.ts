@@ -1,1 +1,1 @@
-export { ScraperManager, DataSyncManager } from './managers';
+export { ScraperManager } from './managers';
