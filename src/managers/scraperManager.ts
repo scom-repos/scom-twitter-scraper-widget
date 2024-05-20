@@ -141,11 +141,20 @@ class ScraperManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    async getTweetsByUserName(username: string, maxTweets?: number) {
+    async getTweetsByUserName(username: string, maxTweets?: number){
         await this.auth.updateGuestToken();
-        const userId = await this.getUserIdByScreenName(username);
-        if (!userId)
-            return null;
+        const result = await this.getTweetTimeline(username, maxTweets, async (q, mt, c) => {
+            const userId = await this.getUserIdByScreenName(username);
+            if (!userId)
+                return null;
+            return this.fetchTweets(userId, mt, c)
+        });
+        console.log('result', result);
+        return result;
+    }
+
+    async fetchTweets(userId: string, maxTweets: number, cursor: string) {
+
         const params = {
             variables: {
                 count: maxTweets ?? 200,
@@ -176,6 +185,9 @@ class ScraperManager {
                 "responsive_web_media_download_video_enabled": false,
                 "responsive_web_enhance_cards_enabled": false
             }
+        }
+        if(cursor != null && cursor != '') {
+            params.variables['cursor'] = cursor;
         }
         const result = await this.api.fetchAnonymous(GET_TWEETS_BY_USER_ID, 'GET', params);
         return this.parser.parseTimelineTweetsV2(result);
@@ -368,6 +380,7 @@ class ScraperManager {
     private async getTweetTimeline(query, maxTweets: number = 50, fetchFunc: (query: string, maxTweets: number, cursor: string) => Promise<any>) {
         let nTweets = 0;
         let cursor = undefined;
+        const tweetsList = [];
         while (nTweets < maxTweets) {
             const batch = await fetchFunc(query, maxTweets, cursor);
             const { tweets, next } = batch;
@@ -377,7 +390,7 @@ class ScraperManager {
             for (const tweet of tweets) {
                 if (nTweets < maxTweets) {
                     cursor = next;
-                    return tweet;
+                    tweetsList.push(tweet);
                 }
                 else {
                     break;
@@ -385,6 +398,7 @@ class ScraperManager {
                 nTweets++;
             }
         }
+        return tweetsList
     }
 
     private async getSearchTimeline(query: string, maxItems: number, cursor: string, searchMode?: string) {

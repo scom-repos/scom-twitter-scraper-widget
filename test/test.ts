@@ -21,7 +21,7 @@ import {ScraperManager} from "../src/managers/scraperManager";
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
             const tweets = await scraperManager.getTweetsByUserName(username, maxTweets);
-            console.log('tweets', tweets);
+            console.log('tweets', tweets.length)
             break;
         }
         case 'get-tweet-by-id': {

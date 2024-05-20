@@ -321,7 +321,7 @@ export default class Parser {
         const expectedEntryTypes = ['tweet', 'profile-conversation'];
         let bottomCursor;
         let topCursor;
-        const tweets: any[] = [];//: ITweets[] = [];
+        const tweets = [];
         const instructions = timeline.data?.user?.result?.timeline_v2?.timeline?.instructions ?? [];
         for (const instruction of instructions) {
             const entries = instruction.entries ?? [];
@@ -333,7 +333,8 @@ export default class Parser {
                 if (entryContent.cursorType === 'Bottom') {
                     bottomCursor = entryContent.value;
                     continue;
-                } else if (entryContent.cursorType === 'Top') {
+                }
+                else if (entryContent.cursorType === 'Top') {
                     topCursor = entryContent.value;
                     continue;
                 }
@@ -344,7 +345,8 @@ export default class Parser {
                 if (entryContent.itemContent) {
                     // Typically TimelineTimelineTweet entries
                     this.parseAndPush(tweets, entryContent.itemContent, idStr);
-                } else if (entryContent.items) {
+                }
+                else if (entryContent.items) {
                     // Typically TimelineTimelineModule entries
                     for (const item of entryContent.items) {
                         if (item.item?.itemContent) {
@@ -354,7 +356,7 @@ export default class Parser {
                 }
             }
         }
-        return tweets;
+        return { tweets, next: bottomCursor, previous: topCursor };
     }
 
     parseRelationshipTimeline(timeline: any) {
