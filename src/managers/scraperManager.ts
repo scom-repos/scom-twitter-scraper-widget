@@ -149,7 +149,6 @@ class ScraperManager {
                 return null;
             return this.fetchTweets(userId, mt, c)
         });
-        console.log('result', result);
         return result;
     }
 
