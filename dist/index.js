@@ -927,7 +927,6 @@ define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], functio
                     const entries = instruction.entries ?? [];
                     for (const entry of entries) {
                         const itemContent = entry.content?.itemContent;
-                        // console.log('itemContent', itemContent)
                         if (itemContent?.userDisplayType === 'User') {
                             const userResultRaw = itemContent.user_results?.result;
                             if (userResultRaw?.legacy) {
@@ -947,7 +946,6 @@ define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], functio
                     }
                 }
             }
-            console.log('profiles', profiles);
             return { profiles, next: bottomCursor, previous: topCursor };
         }
         parseProfile(user, isBlueVerified) {
@@ -1180,7 +1178,6 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                     return null;
                 return this.fetchTweets(userId, mt, c);
             });
-            console.log('result', result);
             return result;
         }
         async fetchTweets(userId, maxTweets, cursor) {
