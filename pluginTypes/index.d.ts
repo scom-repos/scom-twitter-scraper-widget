@@ -112,7 +112,11 @@ declare module "@scom/scom-twitter-sdk/utils/parser.ts" {
             tweet: any;
             err?: undefined;
         };
-        parseTimelineTweetsV2(timeline: any): any[];
+        parseTimelineTweetsV2(timeline: any): {
+            tweets: any[];
+            next: any;
+            previous: any;
+        };
         parseRelationshipTimeline(timeline: any): {
             profiles: any[];
             next: any;
@@ -153,11 +157,16 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private cookie;
         private api;
         constructor();
-        getProfile(username: string): Promise<void>;
+        getProfile(username: string): Promise<any>;
         getUserIdByScreenName(username: string): Promise<string>;
-        searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any>;
+        searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
         private fetchSearchTweets;
         getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
+        fetchTweets(userId: string, maxTweets: number, cursor: string): Promise<{
+            tweets: any[];
+            next: any;
+            previous: any;
+        }>;
         getTweetByTweetId(tweetId: string): Promise<any>;
         getFollowersByUserName(credentials: ICredential, username: string, count?: number): Promise<any>;
         getFollowersByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;

@@ -871,7 +871,7 @@ define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], functio
             const expectedEntryTypes = ['tweet', 'profile-conversation'];
             let bottomCursor;
             let topCursor;
-            const tweets = []; //: ITweets[] = [];
+            const tweets = [];
             const instructions = timeline.data?.user?.result?.timeline_v2?.timeline?.instructions ?? [];
             for (const instruction of instructions) {
                 const entries = instruction.entries ?? [];
@@ -906,7 +906,7 @@ define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], functio
                     }
                 }
             }
-            return tweets;
+            return { tweets, next: bottomCursor, previous: topCursor };
         }
         parseRelationshipTimeline(timeline) {
             let bottomCursor;
@@ -1098,6 +1098,37 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             this.api = new API_1.default(this.auth, this.cookie);
         }
         async getProfile(username) {
+            await this.auth.updateGuestToken();
+            try {
+                const params = {
+                    variables: {
+                        'screen_name': username,
+                        withSafetyModeUserFields: true
+                    },
+                    features: {
+                        hidden_profile_likes_enabled: false,
+                        hidden_profile_subscriptions_enabled: false,
+                        responsive_web_graphql_exclude_directive_enabled: true,
+                        verified_phone_label_enabled: false,
+                        subscriptions_verification_info_is_identity_verified_enabled: false,
+                        subscriptions_verification_info_verified_since_enabled: true,
+                        highlights_tweets_tab_ui_enabled: true,
+                        creator_subscriptions_tweet_preview_api_enabled: true,
+                        responsive_web_graphql_skip_user_profile_image_extensions_enabled: false,
+                        responsive_web_graphql_timeline_navigation_enabled: true
+                    },
+                    fieldToggles: {
+                        withAuxiliaryUserLabels: false
+                    }
+                };
+                const result = await this.api.fetchAnonymous(const_3.GET_USER_BY_SCREENAME, 'GET', params);
+                const user = result.data.user.result;
+                return this.parser.parseProfile(user.legacy, user.is_blue_verified);
+            }
+            catch (e) {
+                console.log(e);
+                throw e;
+            }
         }
         async getUserIdByScreenName(username) {
             await this.auth.updateGuestToken();
@@ -1143,9 +1174,16 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
         }
         async getTweetsByUserName(username, maxTweets) {
             await this.auth.updateGuestToken();
-            const userId = await this.getUserIdByScreenName(username);
-            if (!userId)
-                return null;
+            const result = await this.getTweetTimeline(username, maxTweets, async (q, mt, c) => {
+                const userId = await this.getUserIdByScreenName(username);
+                if (!userId)
+                    return null;
+                return this.fetchTweets(userId, mt, c);
+            });
+            console.log('result', result);
+            return result;
+        }
+        async fetchTweets(userId, maxTweets, cursor) {
             const params = {
                 variables: {
                     count: maxTweets ?? 200,
@@ -1177,6 +1215,9 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                     "responsive_web_enhance_cards_enabled": false
                 }
             };
+            if (cursor != null && cursor != '') {
+                params.variables['cursor'] = cursor;
+            }
             const result = await this.api.fetchAnonymous(const_3.GET_TWEETS_BY_USER_ID, 'GET', params);
             return this.parser.parseTimelineTweetsV2(result);
         }
@@ -1362,6 +1403,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
         async getTweetTimeline(query, maxTweets = 50, fetchFunc) {
             let nTweets = 0;
             let cursor = undefined;
+            const tweetsList = [];
             while (nTweets < maxTweets) {
                 const batch = await fetchFunc(query, maxTweets, cursor);
                 const { tweets, next } = batch;
@@ -1371,7 +1413,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 for (const tweet of tweets) {
                     if (nTweets < maxTweets) {
                         cursor = next;
-                        return tweet;
+                        tweetsList.push(tweet);
                     }
                     else {
                         break;
@@ -1379,6 +1421,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                     nTweets++;
                 }
             }
+            return tweetsList;
         }
         async getSearchTimeline(query, maxItems, cursor, searchMode) {
             // if (!this.auth.isLoggedIn()) {

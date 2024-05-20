@@ -27,7 +27,11 @@ export default class Parser {
         tweet: any;
         err?: undefined;
     };
-    parseTimelineTweetsV2(timeline: any): any[];
+    parseTimelineTweetsV2(timeline: any): {
+        tweets: any[];
+        next: any;
+        previous: any;
+    };
     parseRelationshipTimeline(timeline: any): {
         profiles: any[];
         next: any;
