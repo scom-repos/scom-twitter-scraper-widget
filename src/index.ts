@@ -1,3 +1,6 @@
+import {ScraperManager} from "./managers";
+import Parser from "./utils/parser";
 export {
-    ScraperManager
-} from './managers';
+    ScraperManager,
+    Parser
+}

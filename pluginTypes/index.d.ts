@@ -192,5 +192,7 @@ declare module "@scom/scom-twitter-sdk/managers/index.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk" />
 declare module "@scom/scom-twitter-sdk" {
-    export { ScraperManager } from "@scom/scom-twitter-sdk/managers/index.ts";
+    import { ScraperManager } from "@scom/scom-twitter-sdk/managers/index.ts";
+    import Parser from "@scom/scom-twitter-sdk/utils/parser.ts";
+    export { ScraperManager, Parser };
 }

@@ -1510,9 +1510,10 @@ define("@scom/scom-twitter-sdk/managers/index.ts", ["require", "exports", "@scom
     exports.ScraperManager = void 0;
     Object.defineProperty(exports, "ScraperManager", { enumerable: true, get: function () { return scraperManager_1.ScraperManager; } });
 });
-define("@scom/scom-twitter-sdk", ["require", "exports", "@scom/scom-twitter-sdk/managers/index.ts"], function (require, exports, managers_1) {
+define("@scom/scom-twitter-sdk", ["require", "exports", "@scom/scom-twitter-sdk/managers/index.ts", "@scom/scom-twitter-sdk/utils/parser.ts"], function (require, exports, managers_1, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ScraperManager = void 0;
+    exports.Parser = exports.ScraperManager = void 0;
     Object.defineProperty(exports, "ScraperManager", { enumerable: true, get: function () { return managers_1.ScraperManager; } });
+    exports.Parser = parser_2.default;
 });
