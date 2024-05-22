@@ -158,6 +158,10 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private api;
         constructor();
         getProfile(username: string): Promise<any>;
+        loginAndGetHeader(username: string, password: string): Promise<{
+            authorization: string;
+            cookie: string;
+        }>;
         getUserIdByScreenName(username: string): Promise<string>;
         searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
         private fetchSearchTweets;
@@ -177,6 +181,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private getUserTimeline;
         private getTweetTimeline;
         private getSearchTimeline;
+        private installCsrfToken;
     }
     export { ScraperManager };
 }

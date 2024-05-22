@@ -9,6 +9,10 @@ declare class ScraperManager {
     private api;
     constructor();
     getProfile(username: string): Promise<any>;
+    loginAndGetHeader(username: string, password: string): Promise<{
+        authorization: string;
+        cookie: string;
+    }>;
     getUserIdByScreenName(username: string): Promise<string>;
     searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
     private fetchSearchTweets;
@@ -28,5 +32,6 @@ declare class ScraperManager {
     private getUserTimeline;
     private getTweetTimeline;
     private getSearchTimeline;
+    private installCsrfToken;
 }
 export { ScraperManager };

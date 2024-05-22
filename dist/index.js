@@ -1128,6 +1128,15 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 throw e;
             }
         }
+        async loginAndGetHeader(username, password) {
+            await this.auth.login(username, password);
+            const headers = {
+                authorization: `Bearer ${const_3.BEARER_TOKEN}`,
+                cookie: this.cookie.getCookieExtensionStr()
+            };
+            this.installCsrfToken(headers);
+            return headers;
+        }
         async getUserIdByScreenName(username) {
             await this.auth.updateGuestToken();
             try {
@@ -1192,7 +1201,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 },
                 features: {
                     "responsive_web_graphql_exclude_directive_enabled": true,
-                    "verified_phone_label_enabled": false,
+                    "verified_phone_label_enabled": true,
                     "creator_subscriptions_tweet_preview_api_enabled": true,
                     "responsive_web_graphql_timeline_navigation_enabled": true,
                     "responsive_web_graphql_skip_user_profile_image_extensions_enabled": false,
@@ -1201,15 +1210,15 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                     "graphql_is_translatable_rweb_tweet_is_translatable_enabled": true,
                     "view_counts_everywhere_api_enabled": true,
                     "longform_notetweets_consumption_enabled": true,
-                    "responsive_web_twitter_article_tweet_consumption_enabled": false,
+                    "responsive_web_twitter_article_tweet_consumption_enabled": true,
                     "tweet_awards_web_tipping_enabled": false,
                     "freedom_of_speech_not_reach_fetch_enabled": true,
                     "standardized_nudges_misinfo": true,
                     "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": true,
                     "longform_notetweets_rich_text_read_enabled": true,
                     "longform_notetweets_inline_media_enabled": true,
-                    "responsive_web_media_download_video_enabled": false,
-                    "responsive_web_enhance_cards_enabled": false
+                    "responsive_web_media_download_video_enabled": true,
+                    "responsive_web_enhance_cards_enabled": true
                 }
             };
             if (cursor != null && cursor != '') {
@@ -1485,6 +1494,12 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 }
             };
             return this.api.fetch(const_3.SEARCH_TIMELINE, 'GET', params);
+        }
+        installCsrfToken(headers) {
+            const ct0 = this.cookie.getExtByKey('ct0');
+            if (ct0) {
+                headers['x-csrf-token'] = ct0;
+            }
         }
     }
     exports.ScraperManager = ScraperManager;
