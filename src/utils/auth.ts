@@ -260,7 +260,6 @@ export default class Auth {
             headers: headers,
             body: JSON.stringify(data),
         });
-        console.log(data, res.ok);
         if (!res.ok) {
             return {status: 'error', err: new Error(await res.text())};
         }
