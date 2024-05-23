@@ -30,6 +30,7 @@ export default class Auth {
 
     async login(username: string, password: string, email?: string, twoFactorSecret?: string) {
         await this.updateGuestToken();
+        console.log(this.getGuestToken())
         let next = await this.initLogin();
         while ('subtask' in next && next.subtask) {
             if (next.subtask.subtask_id === 'LoginJsInstrumentationSubtask') {
@@ -260,6 +261,7 @@ export default class Auth {
             headers: headers,
             body: JSON.stringify(data),
         });
+        console.log(data, res.ok)
         if (!res.ok) {
             return {status: 'error', err: new Error(await res.text())};
         }

@@ -1,5 +1,5 @@
 import Auth from "../utils/auth";
-import {objectToParams} from "../utils";
+import { objectToParams } from "../utils";
 import {
     BEARER_TOKEN,
     GET_FOLLOWERS_BY_USER_ID, GET_FOLLOWING_BY_USER_ID,
@@ -10,6 +10,7 @@ import {
 import Cookie from "../utils/cookie";
 import Parser from "../utils/parser";
 import API from "../utils/API";
+// import { ScrapflyClient, ScrapeConfig } from "scrapfly-sdk";
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
@@ -49,17 +50,32 @@ interface ICredential {
     password: string;
 }
 
+type IConfig = {
+    SCRAPER_API_KEY: string;
+    TWITTER_USERNAME: string;
+    TWITTER_PASSWORD: string;
+}
+
 class ScraperManager {
     private parser: Parser;
     private auth: Auth;
     private cookie: Cookie;
     private api: API;
+    private scraperAPIKey: string;
+    private twitterUserName: string;
+    private twitterPassword: string;
 
-    constructor() {
+
+    constructor(config?: IConfig) {
         this.parser = new Parser();
         this.cookie = new Cookie();
         this.auth = new Auth(this.cookie);
         this.api = new API(this.auth, this.cookie);
+        if (config) {
+            this.scraperAPIKey = config.SCRAPER_API_KEY;
+            this.twitterUserName = config.TWITTER_USERNAME;
+            this.twitterPassword = config.TWITTER_PASSWORD;
+        }
     }
 
     async getProfile(username: string) {
@@ -90,14 +106,14 @@ class ScraperManager {
             const user = result.data.user.result;
             return this.parser.parseProfile(user.legacy, user.is_blue_verified);
         }
-        catch(e) {
+        catch (e) {
             console.log(e);
             throw e;
         }
     }
 
-    async loginAndGetHeader(username: string, password: string) {
-        await this.auth.login(username, password);
+    async loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string) {
+        await this.auth.login(username, password, email, twoFactorSecret);
         const headers = {
             authorization: `Bearer ${BEARER_TOKEN}`,
             cookie: this.cookie.getCookieExtensionStr()
@@ -133,7 +149,7 @@ class ScraperManager {
             const result = await this.api.fetchAnonymous(GET_USER_BY_SCREENAME, 'GET', params)
             return result.data.user.result['rest_id'];
         }
-        catch(e) {
+        catch (e) {
             console.log(e);
             throw e;
         }
@@ -151,7 +167,41 @@ class ScraperManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    async getTweetsByUserName(username: string, maxTweets?: number){
+    // async getTweetsByUserName2(username: string) {
+    //     const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword);
+    //     const client = new ScrapflyClient({ key: this.scraperAPIKey });
+    //     try {
+    //         const apiResponse = await client.scrape(new ScrapeConfig({
+    //             headers: loginHeaders,
+    //             tags: ["player,project:default"],
+    //             proxy_pool: "public_residential_pool",
+    //             country: "us",
+    //             asp: true,
+    //             render_js: true,
+    //             url: `https://x.com/${username}`,
+    //             wait_for_selector: "[data-testid='tweet']"
+    //         }));
+    //         const xhrCalls = apiResponse.result.browser_data.xhr_call;
+    //         const tweets = [];
+    //         if (xhrCalls) {
+    //             const tweetCalls = xhrCalls.filter(call => call.url.indexOf('UserTweets') >= 0)
+    //             for (const call of tweetCalls) {
+    //                 if (call.url.indexOf('UserTweets') >= 0) {
+    //                     const body = call.response.body;
+    //                     const data = JSON.parse(body);
+    //                     const content = this.parser.parseTimelineTweetsV2(data);
+    //                     tweets.push(content.tweets);
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     catch (e) {
+    //         console.log(e);
+    //         throw e;
+    //     }
+    // }
+
+    async getTweetsByUserName(username: string, maxTweets?: number) {
         await this.auth.updateGuestToken();
         const result = await this.getTweetTimeline(username, maxTweets, async (q, mt, c) => {
             const userId = await this.getUserIdByScreenName(username);
@@ -195,7 +245,7 @@ class ScraperManager {
                 "responsive_web_enhance_cards_enabled": true
             }
         }
-        if(cursor != null && cursor != '') {
+        if (cursor != null && cursor != '') {
             params.variables['cursor'] = cursor;
         }
         const result = await this.api.fetchAnonymous(GET_TWEETS_BY_USER_ID, 'GET', params);
@@ -366,7 +416,7 @@ class ScraperManager {
         let consecutiveEmptyBatches = 0;
         while (nProfiles < maxProfiles) {
             const batch = await fetchFunc(userId, maxProfiles, cursor);
-            const {profiles, next} = batch;
+            const { profiles, next } = batch;
             cursor = next;
             if (profiles.length === 0) {
                 consecutiveEmptyBatches++;
@@ -414,7 +464,7 @@ class ScraperManager {
         // if (!this.auth.isLoggedIn()) {
         //     throw new Error('Scraper is not logged-in for search.');
         // }
-        if(!searchMode)
+        if (!searchMode)
             searchMode = "Latest";
         if (maxItems > 50) {
             maxItems = 50;
@@ -485,4 +535,4 @@ class ScraperManager {
     }
 }
 
-export {ScraperManager}
+export { ScraperManager }

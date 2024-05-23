@@ -1,7 +1,13 @@
 import {ScraperManager} from "../src/managers/scraperManager";
 
+const CONFIG = require('./data/config');
+
 (async () => {
-    const scraperManager = new ScraperManager();
+    const scraperManager = new ScraperManager({
+        SCRAPER_API_KEY: CONFIG.SCRAPER_API_KEY,
+        TWITTER_USERNAME: CONFIG.TWITTER_USERNAME,
+        TWITTER_PASSWORD: CONFIG.TWITTER_PASSWORD
+    });
     var args = process.argv.slice(2);
     const action = args[0];
     switch(action) {
@@ -17,11 +23,19 @@ import {ScraperManager} from "../src/managers/scraperManager";
             console.log('User ID: ', userId);
             break;
         }
+        case 'login': {
+            const username = args[1];
+            const password = args[2];
+            const header = await scraperManager.loginAndGetHeader('CheukJohnn835', 'Since1994');
+            console.log('header', header)
+        }
         case 'get-tweets': {
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
-            const tweets = await scraperManager.getTweetsByUserName(username, maxTweets);
-            console.log('tweets', tweets.length)
+            const loginHeaders = await scraperManager.loginAndGetHeader('CheukJohnn835', 'Since1994');
+            console.log(loginHeaders)
+            // const tweets = await scraperManager.getTweetsByUserName2(username);
+            // console.log('tweets', tweets.length)
             break;
         }
         case 'get-tweet-by-id': {
