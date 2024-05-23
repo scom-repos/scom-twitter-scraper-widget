@@ -10,7 +10,8 @@ import {
 import Cookie from "../utils/cookie";
 import Parser from "../utils/parser";
 import API from "../utils/API";
-import { ScrapflyClient, ScrapeConfig } from "../lib/main";
+declare const require: any;
+const { ScrapflyClient, ScrapeConfig } = require("../lib/main");
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
@@ -171,8 +172,7 @@ class ScraperManager {
     }
 
     async getTweetsByUserName2(username: string) {
-        const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword);
-        console.log('loginHeaders', loginHeaders)
+        const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword, this.twitterEmail);
         const client = new ScrapflyClient({ key: this.scraperAPIKey });
         try {
             const apiResponse = await client.scrape(new ScrapeConfig({
