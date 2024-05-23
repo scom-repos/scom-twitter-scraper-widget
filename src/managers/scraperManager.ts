@@ -10,7 +10,7 @@ import {
 import Cookie from "../utils/cookie";
 import Parser from "../utils/parser";
 import API from "../utils/API";
-// import { ScrapflyClient, ScrapeConfig } from "scrapfly-sdk";
+import { ScrapflyClient, ScrapeConfig } from "../lib/main";
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
@@ -54,6 +54,7 @@ type IConfig = {
     SCRAPER_API_KEY: string;
     TWITTER_USERNAME: string;
     TWITTER_PASSWORD: string;
+    TWITTER_EMAIL_ADDRESS: string;
 }
 
 class ScraperManager {
@@ -64,17 +65,19 @@ class ScraperManager {
     private scraperAPIKey: string;
     private twitterUserName: string;
     private twitterPassword: string;
-
+    private twitterEmail: string;
 
     constructor(config?: IConfig) {
         this.parser = new Parser();
         this.cookie = new Cookie();
         this.auth = new Auth(this.cookie);
         this.api = new API(this.auth, this.cookie);
+        console.log('CONFIG', config)
         if (config) {
             this.scraperAPIKey = config.SCRAPER_API_KEY;
             this.twitterUserName = config.TWITTER_USERNAME;
             this.twitterPassword = config.TWITTER_PASSWORD;
+            this.twitterEmail = config.TWITTER_EMAIL_ADDRESS;
         }
     }
 
@@ -167,39 +170,41 @@ class ScraperManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    // async getTweetsByUserName2(username: string) {
-    //     const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword);
-    //     const client = new ScrapflyClient({ key: this.scraperAPIKey });
-    //     try {
-    //         const apiResponse = await client.scrape(new ScrapeConfig({
-    //             headers: loginHeaders,
-    //             tags: ["player,project:default"],
-    //             proxy_pool: "public_residential_pool",
-    //             country: "us",
-    //             asp: true,
-    //             render_js: true,
-    //             url: `https://x.com/${username}`,
-    //             wait_for_selector: "[data-testid='tweet']"
-    //         }));
-    //         const xhrCalls = apiResponse.result.browser_data.xhr_call;
-    //         const tweets = [];
-    //         if (xhrCalls) {
-    //             const tweetCalls = xhrCalls.filter(call => call.url.indexOf('UserTweets') >= 0)
-    //             for (const call of tweetCalls) {
-    //                 if (call.url.indexOf('UserTweets') >= 0) {
-    //                     const body = call.response.body;
-    //                     const data = JSON.parse(body);
-    //                     const content = this.parser.parseTimelineTweetsV2(data);
-    //                     tweets.push(content.tweets);
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     catch (e) {
-    //         console.log(e);
-    //         throw e;
-    //     }
-    // }
+    async getTweetsByUserName2(username: string) {
+        const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword);
+        console.log('loginHeaders', loginHeaders)
+        const client = new ScrapflyClient({ key: this.scraperAPIKey });
+        try {
+            const apiResponse = await client.scrape(new ScrapeConfig({
+                headers: loginHeaders,
+                tags: ["player,project:default"],
+                proxy_pool: "public_residential_pool",
+                country: "us",
+                asp: true,
+                render_js: true,
+                url: `https://x.com/${username}`,
+                wait_for_selector: "[data-testid='tweet']"
+            }));
+            const xhrCalls = apiResponse.result.browser_data.xhr_call;
+            const tweets = [];
+            if (xhrCalls) {
+                const tweetCalls = xhrCalls.filter(call => call.url.indexOf('UserTweets') >= 0)
+                for (const call of tweetCalls) {
+                    if (call.url.indexOf('UserTweets') >= 0) {
+                        const body = call.response.body;
+                        const data = JSON.parse(body);
+                        const content = this.parser.parseTimelineTweetsV2(data);
+                        tweets.push(content.tweets);
+                    }
+                }
+            }
+            return tweets;
+        }
+        catch (e) {
+            console.log(e);
+            throw e;
+        }
+    }
 
     async getTweetsByUserName(username: string, maxTweets?: number) {
         await this.auth.updateGuestToken();
