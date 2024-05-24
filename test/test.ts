@@ -5,7 +5,6 @@ const CONFIG = require('./data/config');
 
 (async () => {
     const scraperManager = new ScraperManager({
-        SCRAPER_API_KEY: CONFIG.SCRAPER_API_KEY,
         TWITTER_USERNAME: CONFIG.TWITTER_USERNAME,
         TWITTER_PASSWORD: CONFIG.TWITTER_PASSWORD,
         TWITTER_EMAIL_ADDRESS: CONFIG.TWITTER_EMAIL_ADDRESS
@@ -30,6 +29,14 @@ const CONFIG = require('./data/config');
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
             const tweets = await scraperManager.getTweetsByUserName2(username);
             console.log('tweets', tweets);
+            break;
+        }
+        case 'login': {
+            const username = args[1];
+            const password = args[2];
+            const email = args[3];
+            const loginHeader = await scraperManager.loginAndGetHeader(username, password, email);
+            console.log('Login Header', loginHeader)
             break;
         }
         case 'get-tweet-by-id': {
