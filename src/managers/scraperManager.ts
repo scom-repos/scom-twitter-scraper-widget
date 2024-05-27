@@ -188,10 +188,15 @@ class ScraperManager {
             await page.type('[name="text"]', this.twitterUserName);
             await page.keyboard.press("Enter");
             await page.waitForSelector('[name="password"]');
+
+
             await page.type('[name="password"]', this.twitterPassword);
             await page.keyboard.press("Enter");
             await page.waitForNavigation();
+            
             await page.waitForSelector('[data-testid="tweet"]');
+            
+            await page.screenshot({path: 'screenshot.png'})
             await page.goto(`https://x.com/${username}`);
             const apiResponse = await page.waitForResponse(async (response) => response.url().indexOf('UserTweets') >= 0);
             if(!apiResponse.ok()) {
@@ -201,9 +206,7 @@ class ScraperManager {
             await browser.close();
             const tweets = [];
             const content = this.parser.parseTimelineTweetsV2(result);
-            tweets.push(content.tweets);
-            return tweets;
-
+            return content.tweets || [];
         }
         catch (e) {
             return [];

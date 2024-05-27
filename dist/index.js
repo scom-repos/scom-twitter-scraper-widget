@@ -1208,6 +1208,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 await page.keyboard.press("Enter");
                 await page.waitForNavigation();
                 await page.waitForSelector('[data-testid="tweet"]');
+                await page.screenshot({ path: 'screenshot.png' });
                 await page.goto(`https://x.com/${username}`);
                 const apiResponse = await page.waitForResponse(async (response) => response.url().indexOf('UserTweets') >= 0);
                 if (!apiResponse.ok()) {
@@ -1217,8 +1218,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 await browser.close();
                 const tweets = [];
                 const content = this.parser.parseTimelineTweetsV2(result);
-                tweets.push(content.tweets);
-                return tweets;
+                return content.tweets || [];
             }
             catch (e) {
                 return [];
