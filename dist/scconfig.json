@@ -1,0 +1,8 @@
+{
+    "name": "@scom/scom-twitter-sdk",
+    "type": "sdk",
+    "version": "0.1.23",
+    "dependencies": [
+        "puppeteer"
+    ]
+}
