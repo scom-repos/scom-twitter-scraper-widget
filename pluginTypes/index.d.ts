@@ -147,6 +147,33 @@ declare module "@scom/scom-twitter-sdk/utils/API.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
 declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
+    interface ITweets {
+        conversationId: string;
+        id: string;
+        hashtags: any[];
+        likes: number;
+        mentions: any[];
+        name: string;
+        permanentUrl: string;
+        photos: any[];
+        replies: number;
+        retweets: number;
+        text: string;
+        thread: any[];
+        urls: [];
+        userId: string;
+        username: string;
+        videos: any[];
+        isQuoted: boolean;
+        isReply: boolean;
+        isRetweet: boolean;
+        isPin: boolean;
+        sensitiveContent: boolean;
+        timeParsed: Date;
+        timestamp: number;
+        html: string;
+        views: number;
+    }
     interface ICredential {
         username: string;
         password: string;
@@ -173,7 +200,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         getUserIdByScreenName(username: string): Promise<string>;
         searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
         private fetchSearchTweets;
-        getTweetsByUserName2(username: string): Promise<any[]>;
+        getTweetsByUserName2(username: string): Promise<ITweets[]>;
         getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
         fetchTweets(userId: string, maxTweets: number, cursor: string): Promise<{
             tweets: any[];
