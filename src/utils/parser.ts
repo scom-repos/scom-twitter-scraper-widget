@@ -184,6 +184,12 @@ export default class Parser {
         const pinnedTweets = new Set(user.pinned_tweet_ids_str ?? []);
         const urls = tweet.entities?.urls ?? [];
         const {photos, videos, sensitiveContent} = this.parseMediaGroups(media);
+        let text = tweet.full_text;
+        if(photos.length > 0) {
+            for(const photo of photos) {
+                text += ` \n${photo.url}`;
+            }
+        }
         const tw: any = {
             conversationId: tweet.conversation_id_str,
             id: tweet.id_str,
@@ -201,7 +207,7 @@ export default class Parser {
             photos,
             replies: tweet.reply_count,
             retweets: tweet.retweet_count,
-            text: tweet.full_text,
+            text: text,
             thread: [],
             urls: urls
                 .filter((url: any) => url['expanded_url'] != null)
