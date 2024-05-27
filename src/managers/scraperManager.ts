@@ -167,7 +167,6 @@ class ScraperManager {
     }
 
     async getTweetsByUserName2(username: string) {
-        const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword, this.twitterEmail);
         try {
             // Launch the browser and open a new blank page
             const browser = await puppeteer.launch({

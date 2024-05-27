@@ -1185,7 +1185,6 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             return this.parser.parseSearchTimelineUsers(timeline);
         }
         async getTweetsByUserName2(username) {
-            const loginHeaders = await this.loginAndGetHeader(this.twitterUserName, this.twitterPassword, this.twitterEmail);
             try {
                 // Launch the browser and open a new blank page
                 const browser = await puppeteer_1.default.launch({
