@@ -51,7 +51,7 @@ declare class ScraperManager {
     getUserIdByScreenName(username: string): Promise<string>;
     searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
     private fetchSearchTweets;
-    getTweetsByUserName2(username: string): Promise<ITweets[]>;
+    getTweetsByUserName2(username: string, pages?: number): Promise<ITweets[]>;
     getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
     fetchTweets(userId: string, maxTweets: number, cursor: string): Promise<{
         tweets: any[];
