@@ -157,6 +157,7 @@ export default class Parser {
     }
 
     parseLegacyTweet(user: any, tweet: any) {
+        console.log(tweet);
         if (tweet == null) {
             return {
                 success: false,
@@ -185,11 +186,15 @@ export default class Parser {
         const urls = tweet.entities?.urls ?? [];
         const {photos, videos, sensitiveContent} = this.parseMediaGroups(media);
         let text = tweet.full_text;
+        for(const u of urls) {
+            text = text.replaceAll(u.url, u.expanded_url);
+        }
         if(photos.length > 0) {
             for(const photo of photos) {
                 text += ` \n${photo.url}`;
             }
         }
+
         const tw: any = {
             conversationId: tweet.conversation_id_str,
             id: tweet.id_str,

@@ -166,109 +166,70 @@ class ScraperManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    async getTweetsByUserName2(username: string): Promise<ITweets[]> {
+    async getTweetsByUserName2(username: string, pages: number = 3): Promise<ITweets[]> {
         return new Promise(async (resolve, reject) => {
             let tweets = [];
             try {
+                
+                
                 // Launch the browser and open a new blank page
                 const browser = await puppeteer.launch({
                     headless: true,
                 });
+                let timeout = setTimeout(async () => {
+                    console.log('timeout')
+                    await browser.close();
+                    resolve(tweets);
+                }, 30000)
                 const page = await browser.newPage();
                 await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-    
+
                 // Navigate the page to a URL
                 await page.setJavaScriptEnabled(true);
-                await page.goto('https://x.com/home', { waitUntil: 'networkidle0' });
-    
+                await page.goto('https://x.com/home');
                 // Set screen size
                 await page.setViewport({ width: 2560, height: 1440 });
                 const loginButtonSelector = "[data-testid='loginButton']";
                 await page.waitForSelector(loginButtonSelector, { visible: true });
+                
                 await page.click(loginButtonSelector);
                 await page.waitForSelector('[name="text"]');
                 await page.type('[name="text"]', this.twitterUserName);
                 await page.keyboard.press("Enter");
                 await page.waitForSelector('[name="password"]');
-    
-    
+
                 await page.type('[name="password"]', this.twitterPassword);
                 await page.keyboard.press("Enter");
+            
                 await page.waitForNavigation();
-    
                 await page.waitForSelector('[data-testid="tweet"]');
-    
-                // await page.screenshot({path: 'screenshot.png'})
-                await page.setRequestInterception(true);
-    
-                page.on('request', async req => {
-                    console.log(req.url().indexOf('UserTweets') >= 0)
-                    if(req.url().indexOf('UserTweets') >= 0) {
-                        console.log('userTweets');
-                        const urlParams = new URLSearchParams(req.url().split('?')[1]);
-                        let variables = JSON.parse(urlParams.get('variables'));
-                        variables['count'] = 200;
-                        urlParams.set('variables', JSON.stringify(variables));
-                        console.log('newURL', `${req.url().split('?')[0]}${urlParams.toString()}`)
-                        req.continue({
-                            url: `${req.url().split('?')[0]}${urlParams.toString()}`
-                        })
-                        await page.setRequestInterception(false);
+                
+
+                const userTweetsURL = [];
+
+                page.on('response', async res => {
+                    if(res.url().indexOf('UserTweets') >= 0 && userTweetsURL.indexOf(res.url()) < 0) {
+                        userTweetsURL.push(res.url())
+                        await page.waitForSelector('[data-testid="tweet"]');
+                        if(!res.ok) {
+                            console.log(await res.text());
+                            resolve(tweets);
+                        }
+                        const result = await res.json();
+                        const content = this.parser.parseTimelineTweetsV2(result);
+                        tweets = [...tweets, ...content.tweets];
+                        await page.evaluate(() => {
+                            window.scrollTo(0, document.body.scrollHeight)
+                        });
+                        await page.screenshot({path: `screenshot_${+new Date()}.png`});
+                        clearTimeout(timeout);
+                        timeout = setTimeout(async () => {
+                            await browser.close();
+                            resolve(tweets);
+                        }, 30000)
                     }
                 })
-    
-                // page.on('response', async res => {
-                //     if(res.url().indexOf('UserTweets') >= 0) {
-                //         console.log(res)
-                //         if(!res.ok()) {
-                //             resolve(tweets);
-                //         }
-                //         const result = await res.json();
-                //         const content = this.parser.parseTimelineTweetsV2(result);
-                //         console.log('result', result);
-                //         tweets = [...content.tweets];
-                //         resolve(tweets)
-                //     }
-                // })
-                
                 await page.goto(`https://x.com/${username}`);
-    
-                // const apiRequest = await page.waitForRequest(async (request) => request.url().indexOf('UserTweets') >= 0);
-                // const headers = apiRequest.headers();
-                const apiResponse = await page.waitForResponse(async (response) => response.url().indexOf('UserTweets') >= 0);
-                // console.log(apiResponse)
-                if (!apiResponse.ok()) {
-                    return [];
-                }
-                const result = await apiResponse.json();
-                const content = this.parser.parseTimelineTweetsV2(result);
-                tweets = [...content.tweets];
-                console.log('tweets length', tweets.length)
-    
-                // const url = apiRequest.url();
-                // const params = new URLSearchParams(url.split('?')[1]);
-                // const variables = JSON.parse(params.get('variables'));
-                // variables['count'] = '200';
-                // if(content.next)
-                //     variables['cursor'] = content.next;
-                // params.set('variables', JSON.stringify(variables));
-                // const newURLParams = params.toString();
-    
-                // const newURL = `${url.split('?')[0]}?${newURLParams}`;
-                // console.log('newURL', newURL)
-                // const response = await fetch(newURL, {
-                //     method: 'GET',
-                //     headers
-                // });
-                // console.log('response', response)
-                // if (!response.ok) {
-                //     const text = await response.text();
-                //     console.log('text', text);
-                // }
-                // const result2 = await response.json();
-    
-                await browser.close();
-                resolve(tweets);
             }
             catch (e) {
                 resolve(tweets);

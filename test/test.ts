@@ -28,7 +28,6 @@ const CONFIG = require('./data/config');
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
             const tweets = await scraperManager.getTweetsByUserName2(username);
-            // console.log('tweets', tweets);
             break;
         }
         case 'login': {
