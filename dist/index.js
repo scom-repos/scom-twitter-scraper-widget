@@ -711,7 +711,6 @@ define("@scom/scom-twitter-sdk/utils/parser.ts", ["require", "exports"], functio
             return { sensitiveContent, photos, videos };
         }
         parseLegacyTweet(user, tweet) {
-            console.log(tweet);
             if (tweet == null) {
                 return {
                     success: false,
@@ -1202,7 +1201,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 try {
                     // Launch the browser and open a new blank page
                     const browser = await puppeteer_1.default.launch({
-                        headless: true,
+                        headless: true
                     });
                     let timeout = setTimeout(async () => {
                         console.log('timeout');
@@ -1220,13 +1219,17 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                     await page.waitForSelector(loginButtonSelector, { visible: true });
                     await page.click(loginButtonSelector);
                     await page.waitForSelector('[name="text"]');
+                    console.log("Entering username");
                     await page.type('[name="text"]', this.twitterUserName);
                     await page.keyboard.press("Enter");
                     await page.waitForSelector('[name="password"]');
+                    console.log("Entering password");
                     await page.type('[name="password"]', this.twitterPassword);
                     await page.keyboard.press("Enter");
+                    console.log("Logging in");
                     await page.waitForNavigation();
                     await page.waitForSelector('[data-testid="tweet"]');
+                    console.log("Home page");
                     const userTweetsURL = [];
                     page.on('response', async (res) => {
                         if (res.url().indexOf('UserTweets') >= 0 && userTweetsURL.indexOf(res.url()) < 0) {
@@ -1242,15 +1245,15 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                             await page.evaluate(() => {
                                 window.scrollTo(0, document.body.scrollHeight);
                             });
-                            await page.screenshot({ path: `screenshot_${+new Date()}.png` });
                             clearTimeout(timeout);
                             timeout = setTimeout(async () => {
                                 await browser.close();
                                 resolve(tweets);
-                            }, 30000);
+                            }, 5000);
                         }
                     });
                     await page.goto(`https://x.com/${username}`);
+                    console.log("Scraping tweets...");
                 }
                 catch (e) {
                     resolve(tweets);
