@@ -157,7 +157,6 @@ export default class Parser {
     }
 
     parseLegacyTweet(user: any, tweet: any) {
-        console.log(tweet);
         if (tweet == null) {
             return {
                 success: false,

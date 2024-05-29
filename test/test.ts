@@ -25,9 +25,13 @@ const CONFIG = require('./data/config');
             break;
         }
         case 'get-tweets': {
+            let curtime = +new Date();
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
             const tweets = await scraperManager.getTweetsByUserName2(username);
+            console.log(tweets);
+            console.log('Tweets count: ', tweets.length);
+            console.log('Time lapsed', `${(+new Date() - curtime) / 1000}s`);
             break;
         }
         case 'login': {

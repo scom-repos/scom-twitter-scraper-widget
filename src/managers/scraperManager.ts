@@ -174,7 +174,7 @@ class ScraperManager {
                 
                 // Launch the browser and open a new blank page
                 const browser = await puppeteer.launch({
-                    headless: true,
+                    headless: true
                 });
                 let timeout = setTimeout(async () => {
                     console.log('timeout')
@@ -194,16 +194,20 @@ class ScraperManager {
                 
                 await page.click(loginButtonSelector);
                 await page.waitForSelector('[name="text"]');
+                console.log("Entering username");
                 await page.type('[name="text"]', this.twitterUserName);
                 await page.keyboard.press("Enter");
                 await page.waitForSelector('[name="password"]');
 
+                console.log("Entering password")
                 await page.type('[name="password"]', this.twitterPassword);
                 await page.keyboard.press("Enter");
             
+                console.log("Logging in")
                 await page.waitForNavigation();
                 await page.waitForSelector('[data-testid="tweet"]');
                 
+                console.log("Home page")
 
                 const userTweetsURL = [];
 
@@ -221,15 +225,15 @@ class ScraperManager {
                         await page.evaluate(() => {
                             window.scrollTo(0, document.body.scrollHeight)
                         });
-                        await page.screenshot({path: `screenshot_${+new Date()}.png`});
                         clearTimeout(timeout);
                         timeout = setTimeout(async () => {
                             await browser.close();
                             resolve(tweets);
-                        }, 30000)
+                        }, 5000)
                     }
                 })
                 await page.goto(`https://x.com/${username}`);
+                console.log("Scraping tweets...");
             }
             catch (e) {
                 resolve(tweets);
