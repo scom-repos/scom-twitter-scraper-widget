@@ -3,6 +3,6 @@
     "type": "sdk",
     "version": "0.1.23",
     "dependencies": [
-        "puppeteer"
+        "@scom/scom-scraper"
     ]
 }

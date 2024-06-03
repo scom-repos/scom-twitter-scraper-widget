@@ -1,2 +1,2 @@
-import { ScraperManager } from "./scraperManager";
-export { ScraperManager };
+import { TwitterManager } from "./scraperManager";
+export { TwitterManager };

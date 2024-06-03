@@ -1,6 +1,6 @@
-import {ScraperManager} from "./managers";
+import {TwitterManager} from "./managers";
 import Parser from "./utils/parser";
 export {
-    ScraperManager,
+    TwitterManager,
     Parser
 }

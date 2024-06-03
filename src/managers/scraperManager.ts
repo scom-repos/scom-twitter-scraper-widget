@@ -10,7 +10,7 @@ import {
 import Cookie from "../utils/cookie";
 import Parser from "../utils/parser";
 import API from "../utils/API";
-import puppeteer from "puppeteer";
+import ScraperManager from "@scom/scom-scraper";
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
@@ -56,7 +56,7 @@ type IConfig = {
     TWITTER_EMAIL_ADDRESS: string;
 }
 
-class ScraperManager {
+class TwitterManager {
     private parser: Parser;
     private auth: Auth;
     private cookie: Cookie;
@@ -64,6 +64,8 @@ class ScraperManager {
     private twitterUserName: string;
     private twitterPassword: string;
     private twitterEmail: string;
+    private scraperManager: ScraperManager;
+
 
     constructor(config?: IConfig) {
         this.parser = new Parser();
@@ -75,6 +77,13 @@ class ScraperManager {
             this.twitterPassword = config.TWITTER_PASSWORD;
             this.twitterEmail = config.TWITTER_EMAIL_ADDRESS;
         }
+        this.scraperManager = new ScraperManager({
+            twitterConfig: {
+                username: this.twitterUserName,
+                password: this.twitterPassword,
+                emailAddress: this.twitterEmail
+            }
+        })
     }
 
     async getProfile(username: string) {
@@ -167,78 +176,7 @@ class ScraperManager {
     }
 
     async getTweetsByUserName2(username: string, pages: number = 3): Promise<ITweets[]> {
-        return new Promise(async (resolve, reject) => {
-            let tweets = [];
-            try {
-                
-                
-                // Launch the browser and open a new blank page
-                const browser = await puppeteer.launch({
-                    headless: true
-                });
-                let timeout = setTimeout(async () => {
-                    console.log('timeout')
-                    await browser.close();
-                    resolve(tweets);
-                }, 30000)
-                const page = await browser.newPage();
-                await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-
-                // Navigate the page to a URL
-                await page.setJavaScriptEnabled(true);
-                await page.goto('https://x.com/home');
-                // Set screen size
-                await page.setViewport({ width: 2560, height: 1440 });
-                const loginButtonSelector = "[data-testid='loginButton']";
-                await page.waitForSelector(loginButtonSelector, { visible: true });
-                
-                await page.click(loginButtonSelector);
-                await page.waitForSelector('[name="text"]');
-                console.log("Entering username");
-                await page.type('[name="text"]', this.twitterUserName);
-                await page.keyboard.press("Enter");
-                await page.waitForSelector('[name="password"]');
-
-                console.log("Entering password")
-                await page.type('[name="password"]', this.twitterPassword);
-                await page.keyboard.press("Enter");
-            
-                console.log("Logging in")
-                await page.waitForNavigation();
-                await page.waitForSelector('[data-testid="tweet"]');
-                
-                console.log("Home page")
-
-                const userTweetsURL = [];
-
-                page.on('response', async res => {
-                    if(res.url().indexOf('UserTweets') >= 0 && userTweetsURL.indexOf(res.url()) < 0) {
-                        userTweetsURL.push(res.url())
-                        await page.waitForSelector('[data-testid="tweet"]');
-                        if(!res.ok) {
-                            console.log(await res.text());
-                            resolve(tweets);
-                        }
-                        const result = await res.json();
-                        const content = this.parser.parseTimelineTweetsV2(result);
-                        tweets = [...tweets, ...content.tweets];
-                        await page.evaluate(() => {
-                            window.scrollTo(0, document.body.scrollHeight)
-                        });
-                        clearTimeout(timeout);
-                        timeout = setTimeout(async () => {
-                            await browser.close();
-                            resolve(tweets);
-                        }, 5000)
-                    }
-                })
-                await page.goto(`https://x.com/${username}`);
-                console.log("Scraping tweets...");
-            }
-            catch (e) {
-                resolve(tweets);
-            }
-        })
+        return this.scraperManager.scrapTweetsByUsername(username);
     }
 
     async getTweetsByUserName(username: string, maxTweets?: number) {
@@ -575,4 +513,4 @@ class ScraperManager {
     }
 }
 
-export { ScraperManager }
+export { TwitterManager, ScraperManager };

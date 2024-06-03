@@ -147,6 +147,7 @@ declare module "@scom/scom-twitter-sdk/utils/API.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
 declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
+    import ScraperManager from "@scom/scom-scraper";
     interface ITweets {
         conversationId: string;
         id: string;
@@ -183,7 +184,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         TWITTER_PASSWORD: string;
         TWITTER_EMAIL_ADDRESS: string;
     };
-    class ScraperManager {
+    class TwitterManager {
         private parser;
         private auth;
         private cookie;
@@ -191,6 +192,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private twitterUserName;
         private twitterPassword;
         private twitterEmail;
+        private scraperManager;
         constructor(config?: IConfig);
         getProfile(username: string): Promise<any>;
         loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string): Promise<{
@@ -219,16 +221,16 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private getSearchTimeline;
         private installCsrfToken;
     }
-    export { ScraperManager };
+    export { TwitterManager, ScraperManager };
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/index.ts" />
 declare module "@scom/scom-twitter-sdk/managers/index.ts" {
-    import { ScraperManager } from "@scom/scom-twitter-sdk/managers/scraperManager.ts";
-    export { ScraperManager };
+    import { TwitterManager } from "@scom/scom-twitter-sdk/managers/scraperManager.ts";
+    export { TwitterManager };
 }
 /// <amd-module name="@scom/scom-twitter-sdk" />
 declare module "@scom/scom-twitter-sdk" {
-    import { ScraperManager } from "@scom/scom-twitter-sdk/managers/index.ts";
+    import { TwitterManager } from "@scom/scom-twitter-sdk/managers/index.ts";
     import Parser from "@scom/scom-twitter-sdk/utils/parser.ts";
-    export { ScraperManager, Parser };
+    export { TwitterManager, Parser };
 }

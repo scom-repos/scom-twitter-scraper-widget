@@ -1,3 +1,4 @@
+import ScraperManager from "@scom/scom-scraper";
 interface ITweets {
     conversationId: string;
     id: string;
@@ -34,7 +35,7 @@ type IConfig = {
     TWITTER_PASSWORD: string;
     TWITTER_EMAIL_ADDRESS: string;
 };
-declare class ScraperManager {
+declare class TwitterManager {
     private parser;
     private auth;
     private cookie;
@@ -42,6 +43,7 @@ declare class ScraperManager {
     private twitterUserName;
     private twitterPassword;
     private twitterEmail;
+    private scraperManager;
     constructor(config?: IConfig);
     getProfile(username: string): Promise<any>;
     loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string): Promise<{
@@ -70,4 +72,4 @@ declare class ScraperManager {
     private getSearchTimeline;
     private installCsrfToken;
 }
-export { ScraperManager };
+export { TwitterManager, ScraperManager };

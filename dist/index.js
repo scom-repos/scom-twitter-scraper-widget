@@ -1095,11 +1095,12 @@ define("@scom/scom-twitter-sdk/utils/API.ts", ["require", "exports", "@scom/scom
     }
     exports.default = API;
 });
-define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports", "@scom/scom-twitter-sdk/utils/auth.ts", "@scom/scom-twitter-sdk/const.ts", "@scom/scom-twitter-sdk/utils/cookie.ts", "@scom/scom-twitter-sdk/utils/parser.ts", "@scom/scom-twitter-sdk/utils/API.ts", "puppeteer"], function (require, exports, auth_1, const_3, cookie_1, parser_1, API_1, puppeteer_1) {
+define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports", "@scom/scom-twitter-sdk/utils/auth.ts", "@scom/scom-twitter-sdk/const.ts", "@scom/scom-twitter-sdk/utils/cookie.ts", "@scom/scom-twitter-sdk/utils/parser.ts", "@scom/scom-twitter-sdk/utils/API.ts", "@scom/scom-scraper"], function (require, exports, auth_1, const_3, cookie_1, parser_1, API_1, scom_scraper_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ScraperManager = void 0;
-    class ScraperManager {
+    exports.ScraperManager = exports.TwitterManager = void 0;
+    exports.ScraperManager = scom_scraper_1.default;
+    class TwitterManager {
         constructor(config) {
             this.parser = new parser_1.default();
             this.cookie = new cookie_1.default();
@@ -1110,6 +1111,13 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
                 this.twitterPassword = config.TWITTER_PASSWORD;
                 this.twitterEmail = config.TWITTER_EMAIL_ADDRESS;
             }
+            this.scraperManager = new scom_scraper_1.default({
+                twitterConfig: {
+                    username: this.twitterUserName,
+                    password: this.twitterPassword,
+                    emailAddress: this.twitterEmail
+                }
+            });
         }
         async getProfile(username) {
             await this.auth.updateGuestToken();
@@ -1196,69 +1204,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             return this.parser.parseSearchTimelineUsers(timeline);
         }
         async getTweetsByUserName2(username, pages = 3) {
-            return new Promise(async (resolve, reject) => {
-                let tweets = [];
-                try {
-                    // Launch the browser and open a new blank page
-                    const browser = await puppeteer_1.default.launch({
-                        headless: true
-                    });
-                    let timeout = setTimeout(async () => {
-                        console.log('timeout');
-                        await browser.close();
-                        resolve(tweets);
-                    }, 30000);
-                    const page = await browser.newPage();
-                    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36');
-                    // Navigate the page to a URL
-                    await page.setJavaScriptEnabled(true);
-                    await page.goto('https://x.com/home');
-                    // Set screen size
-                    await page.setViewport({ width: 2560, height: 1440 });
-                    const loginButtonSelector = "[data-testid='loginButton']";
-                    await page.waitForSelector(loginButtonSelector, { visible: true });
-                    await page.click(loginButtonSelector);
-                    await page.waitForSelector('[name="text"]');
-                    console.log("Entering username");
-                    await page.type('[name="text"]', this.twitterUserName);
-                    await page.keyboard.press("Enter");
-                    await page.waitForSelector('[name="password"]');
-                    console.log("Entering password");
-                    await page.type('[name="password"]', this.twitterPassword);
-                    await page.keyboard.press("Enter");
-                    console.log("Logging in");
-                    await page.waitForNavigation();
-                    await page.waitForSelector('[data-testid="tweet"]');
-                    console.log("Home page");
-                    const userTweetsURL = [];
-                    page.on('response', async (res) => {
-                        if (res.url().indexOf('UserTweets') >= 0 && userTweetsURL.indexOf(res.url()) < 0) {
-                            userTweetsURL.push(res.url());
-                            await page.waitForSelector('[data-testid="tweet"]');
-                            if (!res.ok) {
-                                console.log(await res.text());
-                                resolve(tweets);
-                            }
-                            const result = await res.json();
-                            const content = this.parser.parseTimelineTweetsV2(result);
-                            tweets = [...tweets, ...content.tweets];
-                            await page.evaluate(() => {
-                                window.scrollTo(0, document.body.scrollHeight);
-                            });
-                            clearTimeout(timeout);
-                            timeout = setTimeout(async () => {
-                                await browser.close();
-                                resolve(tweets);
-                            }, 5000);
-                        }
-                    });
-                    await page.goto(`https://x.com/${username}`);
-                    console.log("Scraping tweets...");
-                }
-                catch (e) {
-                    resolve(tweets);
-                }
-            });
+            return this.scraperManager.scrapTweetsByUsername(username);
         }
         async getTweetsByUserName(username, maxTweets) {
             await this.auth.updateGuestToken();
@@ -1583,18 +1529,18 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             }
         }
     }
-    exports.ScraperManager = ScraperManager;
+    exports.TwitterManager = TwitterManager;
 });
 define("@scom/scom-twitter-sdk/managers/index.ts", ["require", "exports", "@scom/scom-twitter-sdk/managers/scraperManager.ts"], function (require, exports, scraperManager_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ScraperManager = void 0;
-    Object.defineProperty(exports, "ScraperManager", { enumerable: true, get: function () { return scraperManager_1.ScraperManager; } });
+    exports.TwitterManager = void 0;
+    Object.defineProperty(exports, "TwitterManager", { enumerable: true, get: function () { return scraperManager_1.TwitterManager; } });
 });
 define("@scom/scom-twitter-sdk", ["require", "exports", "@scom/scom-twitter-sdk/managers/index.ts", "@scom/scom-twitter-sdk/utils/parser.ts"], function (require, exports, managers_1, parser_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Parser = exports.ScraperManager = void 0;
-    Object.defineProperty(exports, "ScraperManager", { enumerable: true, get: function () { return managers_1.ScraperManager; } });
+    exports.Parser = exports.TwitterManager = void 0;
+    Object.defineProperty(exports, "TwitterManager", { enumerable: true, get: function () { return managers_1.TwitterManager; } });
     exports.Parser = parser_2.default;
 });
