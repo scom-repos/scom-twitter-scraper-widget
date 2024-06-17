@@ -147,7 +147,7 @@ declare module "@scom/scom-twitter-sdk/utils/API.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
 declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
-    import ScraperManager from "@scom/scom-scraper";
+    import ScraperManager, { IScraperConfig } from "@scom/scom-scraper";
     interface ITweets {
         conversationId: string;
         id: string;
@@ -179,11 +179,6 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         username: string;
         password: string;
     }
-    type IConfig = {
-        TWITTER_USERNAME: string;
-        TWITTER_PASSWORD: string;
-        TWITTER_EMAIL_ADDRESS: string;
-    };
     class TwitterManager {
         private parser;
         private auth;
@@ -193,7 +188,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private twitterPassword;
         private twitterEmail;
         private scraperManager;
-        constructor(config?: IConfig);
+        constructor(config?: IScraperConfig);
         getProfile(username: string): Promise<any>;
         loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string): Promise<{
             authorization: string;

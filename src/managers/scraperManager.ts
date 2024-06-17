@@ -2,7 +2,8 @@ import Auth from "../utils/auth";
 import { objectToParams } from "../utils";
 import {
     BEARER_TOKEN,
-    GET_FOLLOWERS_BY_USER_ID, GET_FOLLOWING_BY_USER_ID,
+    GET_FOLLOWERS_BY_USER_ID, 
+    GET_FOLLOWING_BY_USER_ID,
     GET_TWEET_BY_ID,
     GET_TWEETS_BY_USER_ID,
     GET_USER_BY_SCREENAME, SEARCH_TIMELINE
@@ -10,7 +11,7 @@ import {
 import Cookie from "../utils/cookie";
 import Parser from "../utils/parser";
 import API from "../utils/API";
-import ScraperManager from "@scom/scom-scraper";
+import ScraperManager, {IScraperConfig, ITweet, ITwitterConfig} from "@scom/scom-scraper";
 
 interface IScraperManager {
     getUserIdByUserName: (username: string) => Promise<string>;
@@ -50,12 +51,6 @@ interface ICredential {
     password: string;
 }
 
-type IConfig = {
-    TWITTER_USERNAME: string;
-    TWITTER_PASSWORD: string;
-    TWITTER_EMAIL_ADDRESS: string;
-}
-
 class TwitterManager {
     private parser: Parser;
     private auth: Auth;
@@ -67,23 +62,12 @@ class TwitterManager {
     private scraperManager: ScraperManager;
 
 
-    constructor(config?: IConfig) {
+    constructor(config?: IScraperConfig) {
         this.parser = new Parser();
         this.cookie = new Cookie();
         this.auth = new Auth(this.cookie);
         this.api = new API(this.auth, this.cookie);
-        if (config) {
-            this.twitterUserName = config.TWITTER_USERNAME;
-            this.twitterPassword = config.TWITTER_PASSWORD;
-            this.twitterEmail = config.TWITTER_EMAIL_ADDRESS;
-        }
-        this.scraperManager = new ScraperManager({
-            twitterConfig: {
-                username: this.twitterUserName,
-                password: this.twitterPassword,
-                emailAddress: this.twitterEmail
-            }
-        })
+        this.scraperManager = new ScraperManager(config)
     }
 
     async getProfile(username: string) {

@@ -1106,18 +1106,7 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             this.cookie = new cookie_1.default();
             this.auth = new auth_1.default(this.cookie);
             this.api = new API_1.default(this.auth, this.cookie);
-            if (config) {
-                this.twitterUserName = config.TWITTER_USERNAME;
-                this.twitterPassword = config.TWITTER_PASSWORD;
-                this.twitterEmail = config.TWITTER_EMAIL_ADDRESS;
-            }
-            this.scraperManager = new scom_scraper_1.default({
-                twitterConfig: {
-                    username: this.twitterUserName,
-                    password: this.twitterPassword,
-                    emailAddress: this.twitterEmail
-                }
-            });
+            this.scraperManager = new scom_scraper_1.default(config);
         }
         async getProfile(username) {
             await this.auth.updateGuestToken();
