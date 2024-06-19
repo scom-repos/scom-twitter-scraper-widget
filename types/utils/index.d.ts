@@ -1,3 +1,4 @@
 declare const objectToParams: (data: any) => string;
 declare const paramsToObject: (params: string) => any;
-export { objectToParams, paramsToObject };
+declare const sleep: (ms: number) => Promise<void>;
+export { objectToParams, paramsToObject, sleep };

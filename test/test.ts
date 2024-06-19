@@ -1,9 +1,9 @@
 import { TwitterManager } from "../src/managers/scraperManager";
-import { twitterConfig } from "./data/config";
+import { twitterAccounts } from "./data/config";
 
 (async () => {
     const scraperManager = new TwitterManager({
-        twitterConfig
+        twitterAccounts
     });
     var args = process.argv.slice(2);
     const action = args[0];
@@ -23,9 +23,9 @@ import { twitterConfig } from "./data/config";
         case 'get-tweets': {
             let curtime = +new Date();
             const username = args[1];
-            const maxTweets = args[2] ? parseInt(args[2]) : 200;
-            const tweets = await scraperManager.getTweetsByUserName2(username, maxTweets);
-            console.log(tweets);
+            const since = args[2] ? parseInt(args[2]) : 0;
+            const maxTweets = args[3] ? parseInt(args[3]) : 200;
+            const tweets = await scraperManager.getTweetsByUserName2(username, since, maxTweets);
             console.log('Tweets count: ', tweets.length);
             console.log('Time lapsed', `${(+new Date() - curtime) / 1000}s`);
             break;

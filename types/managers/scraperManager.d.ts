@@ -1,45 +1,14 @@
-import ScraperManager, { IScraperConfig } from "@scom/scom-scraper";
-interface ITweets {
-    conversationId: string;
-    id: string;
-    hashtags: any[];
-    likes: number;
-    mentions: any[];
-    name: string;
-    permanentUrl: string;
-    photos: any[];
-    replies: number;
-    retweets: number;
-    text: string;
-    thread: any[];
-    urls: [];
-    userId: string;
-    username: string;
-    videos: any[];
-    isQuoted: boolean;
-    isReply: boolean;
-    isRetweet: boolean;
-    isPin: boolean;
-    sensitiveContent: boolean;
-    timeParsed: Date;
-    timestamp: number;
-    html: string;
-    views: number;
-}
-interface ICredential {
-    username: string;
-    password: string;
-}
+import { IConfig, ICredential, ITweet } from "../utils/interface";
 declare class TwitterManager {
     private parser;
     private auth;
     private cookie;
     private api;
-    private twitterUserName;
-    private twitterPassword;
-    private twitterEmail;
+    private _config;
+    private _currentAccount;
+    private _currentAccountIndex;
     private scraperManager;
-    constructor(config?: IScraperConfig);
+    constructor(config?: IConfig);
     getProfile(username: string): Promise<any>;
     loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string): Promise<{
         authorization: string;
@@ -48,7 +17,16 @@ declare class TwitterManager {
     getUserIdByScreenName(username: string): Promise<string>;
     searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
     private fetchSearchTweets;
-    getTweetsByUserName2(username: string, since?: number, maxTweets?: number): Promise<ITweets[]>;
+    private hasMoreTweets;
+    private enterUserName;
+    private enterPassword;
+    private enterEmailAddress;
+    private login;
+    private logout;
+    private redirect;
+    private useNextTwitterAccount;
+    private scrapTweets;
+    getTweetsByUserName2(username: string, since?: number, maxTweets?: number): Promise<ITweet[]>;
     getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
     fetchTweets(userId: string, maxTweets: number, cursor: string): Promise<{
         tweets: any[];
@@ -67,4 +45,4 @@ declare class TwitterManager {
     private getSearchTimeline;
     private installCsrfToken;
 }
-export { TwitterManager, ScraperManager };
+export { TwitterManager };
