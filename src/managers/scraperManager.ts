@@ -1,8 +1,8 @@
 import Auth from "../utils/auth";
-import { objectToParams } from "../utils";
+import { sleep } from "../utils";
 import {
     BEARER_TOKEN,
-    GET_FOLLOWERS_BY_USER_ID, 
+    GET_FOLLOWERS_BY_USER_ID,
     GET_FOLLOWING_BY_USER_ID,
     GET_TWEET_BY_ID,
     GET_TWEETS_BY_USER_ID,
@@ -11,63 +11,30 @@ import {
 import Cookie from "../utils/cookie";
 import Parser from "../utils/parser";
 import API from "../utils/API";
-import ScraperManager, {IScraperConfig, ITweet, ITwitterConfig} from "@scom/scom-scraper";
-
-interface IScraperManager {
-    getUserIdByUserName: (username: string) => Promise<string>;
-    getTweetsByUserName: (username: string) => Promise<any>;
-}
-
-interface ITweets {
-    conversationId: string;
-    id: string;
-    hashtags: any[];
-    likes: number;
-    mentions: any[];
-    name: string;
-    permanentUrl: string;
-    photos: any[];
-    replies: number;
-    retweets: number;
-    text: string;
-    thread: any[];
-    urls: [];
-    userId: string;
-    username: string;
-    videos: any[];
-    isQuoted: boolean;
-    isReply: boolean;
-    isRetweet: boolean;
-    isPin: boolean;
-    sensitiveContent: boolean;
-    timeParsed: Date;
-    timestamp: number;
-    html: string;
-    views: number;
-}
-
-interface ICredential {
-    username: string;
-    password: string;
-}
+import { IAccount, IConfig, ICredential, ITweet } from "../utils/interface";
+import ScraperManager, { Browser, Page } from "@scom/scom-scraper";
 
 class TwitterManager {
     private parser: Parser;
     private auth: Auth;
     private cookie: Cookie;
     private api: API;
-    private twitterUserName: string;
-    private twitterPassword: string;
-    private twitterEmail: string;
+    private _config: IConfig;
+    private _currentAccount: IAccount;
+    private _currentAccountIndex: number = -1;
     private scraperManager: ScraperManager;
 
-
-    constructor(config?: IScraperConfig) {
+    constructor(config?: IConfig) {
         this.parser = new Parser();
         this.cookie = new Cookie();
         this.auth = new Auth(this.cookie);
         this.api = new API(this.auth, this.cookie);
-        this.scraperManager = new ScraperManager(config)
+        this.scraperManager = new ScraperManager();
+        this._config = config;
+        if (config.twitterAccounts?.length > 0) {
+            this._currentAccount = config.twitterAccounts[0];
+            this._currentAccountIndex = 0;
+        }
     }
 
     async getProfile(username: string) {
@@ -159,8 +126,165 @@ class TwitterManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    async getTweetsByUserName2(username: string, pages: number = 3): Promise<ITweets[]> {
-        return this.scraperManager.scrapTweetsByUsername(username);
+    private hasMoreTweets = (data: any) => {
+        const instructions = data.data.user.result.timeline_v2.timeline.instructions;
+        const timelineAddEntries = instructions.filter(v => v.type === "TimelineAddEntries");
+        if (timelineAddEntries.length === 0) return false;
+        return timelineAddEntries[0].entries?.length > 2;
+    }
+
+    private async enterUserName(page: Page, username: string) {
+        const usernameSelector = '[name="text"]';
+        await page.waitForSelector(usernameSelector);
+        await page.type(usernameSelector, username);
+        await page.keyboard.press("Enter");
+    }
+
+    private async enterPassword(page: Page, password: string) {
+        const passwordSelector = '[name="password"]';
+        await page.waitForSelector(passwordSelector);
+        await page.type(passwordSelector, password);
+        await page.keyboard.press("Enter");
+    }
+
+    private async enterEmailAddress(page: Page, emailAddress: string) {
+        const emailAddressSelector = '[data-testid="ocfEnterTextTextInput"]';
+        await page.waitForSelector(emailAddressSelector);
+        await page.type(emailAddressSelector, emailAddress);
+        await page.keyboard.press("Enter");
+    }
+
+    private async login(page: Page): Promise<void> {
+        const usernameSelector = '[name="text"]';
+        const passwordSelector = '[name="password"]';
+        await this.redirect(page, 'https://x.com/i/flow/login');
+        await this.enterUserName(page, this._currentAccount.username)
+        await this.enterPassword(page, this._currentAccount.password)
+        const response = await page.waitForResponse("https://api.x.com/1.1/onboarding/task.json");
+        if (response.ok && response.request().method() === 'POST') {
+            const data = await response.json();
+            if (data.subtasks?.length > 0) {
+                switch (data.subtasks[0].subtask_id) {
+                    case "LoginAcid": {
+                        await this.enterEmailAddress(page, this._currentAccount.emailAddress);
+                        break;
+                    }
+                    case "LoginSuccessSubtask": {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    private async logout(page: Page) {
+        const logoutButtonSelector = '[data-testid="confirmationSheetConfirm"]';
+        console.log('Logging out...');
+        await page.goto('https://x.com/logout');
+        await page.waitForSelector(logoutButtonSelector);
+        await page.click(logoutButtonSelector);
+        await page.waitForNavigation();
+        console.log('Logged out.');
+    }
+
+    private async redirect(page: Page, url: string) {
+        return page.goto(url);
+    }
+
+    private useNextTwitterAccount(): boolean {
+        const newIndex = this._currentAccountIndex++;
+        if (newIndex >= this._config.twitterAccounts.length) return true;
+        this._currentAccount = this._config.twitterAccounts[newIndex];
+        return false;
+    }
+
+    private async scrapTweets(browser: Browser, page: Page, username: string, since: number = 0, maxTweets?: number): Promise<ITweet[]> {
+        let tweets: ITweet[] = [];
+        console.log('scrapTweets', this._currentAccount);
+        console.log("Logging in...");
+        await this.login(page);
+        await page.waitForNavigation();
+        console.log("Redirecting to target page...");
+        await this.redirect(page, `https://x.com/${username}`);
+
+        let response = null;
+        let hasMore = true;
+        do {
+            try {
+                try {
+                    response = await page.waitForResponse(res => res.url().indexOf('UserTweets') >= 0 && res.request().method() === 'GET');
+                }
+                catch (e) {
+                    if (tweets.length > 0)
+                        return tweets;
+                }
+                if (!response.ok()) {
+                    console.log('Failed', await response.text());
+                    await this.logout(page);
+                    const accountDepleted = this.useNextTwitterAccount();
+                    if (accountDepleted) {
+                        console.log('Account depleted.');
+                        return [];
+                    }
+                    console.log('switchig account...', this._currentAccount)
+                    return this.scrapTweets(browser, page, username, since, maxTweets);
+                }
+
+                const responseData = await response.json();
+                const content = this.parser.parseTimelineTweetsV2(responseData);
+                tweets = [...tweets, ...content.tweets];
+                let isTimeValid = true;
+                if (since && tweets.length) {
+                    const oldestTweet = tweets.sort((a, b) => b.timestamp - a.timestamp)[0];
+                    isTimeValid = (oldestTweet.timestamp * 1000) > since;
+                }
+                hasMore = isTimeValid && (!maxTweets || tweets.length < maxTweets) && this.hasMoreTweets(responseData);
+                if (hasMore) {
+                    console.log("Scrolling down");
+                    await sleep(2000)
+                    await page.evaluate(() => {
+                        window.scrollTo(0, document.body.scrollHeight);
+                    });
+                }
+            }
+            catch (e) {
+                console.log(e);
+                await this.logout(page);
+                const accountDepleted = this.useNextTwitterAccount();
+                if (accountDepleted) {
+                    console.log('Account depleted.');
+                    return [];
+                }
+                return this.scrapTweets(browser, page, username, since, maxTweets);
+            }
+
+        } while (hasMore);
+        if (maxTweets) {
+            tweets = tweets.slice(0, maxTweets);
+        }
+        if (since) {
+            tweets = tweets.filter(v => (v.timestamp * 1000) >= since);
+        }
+        return tweets;
+    }
+
+    async getTweetsByUserName2(username: string, since: number = 0, maxTweets?: number): Promise<ITweet[]> {
+        let tweets: ITweet[] = [];
+        const scraper = await this.scraperManager.getBrowserAndPage();
+        if (!scraper) {
+            console.log('cannot open browser and page');
+            return tweets;
+        }
+        const { browser, page } = scraper;
+        try {
+            tweets = await this.scrapTweets(browser, page, username, since, maxTweets);
+        } catch (e) {
+            console.log(e);
+        } finally {
+            console.log('closing browser');
+            await browser.close();
+        }
+        return tweets;
     }
 
     async getTweetsByUserName(username: string, maxTweets?: number) {
@@ -497,4 +621,4 @@ class TwitterManager {
     }
 }
 
-export { TwitterManager, ScraperManager };
+export { TwitterManager };

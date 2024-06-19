@@ -79,7 +79,8 @@ declare module "@scom/scom-twitter-sdk/utils/auth.ts" {
 declare module "@scom/scom-twitter-sdk/utils/index.ts" {
     const objectToParams: (data: any) => string;
     const paramsToObject: (params: string) => any;
-    export { objectToParams, paramsToObject };
+    const sleep: (ms: number) => Promise<void>;
+    export { objectToParams, paramsToObject, sleep };
 }
 /// <amd-module name="@scom/scom-twitter-sdk/utils/parser.ts" />
 declare module "@scom/scom-twitter-sdk/utils/parser.ts" {
@@ -145,10 +146,21 @@ declare module "@scom/scom-twitter-sdk/utils/API.ts" {
         private installCsrfToken;
     }
 }
-/// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
-declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
-    import ScraperManager, { IScraperConfig } from "@scom/scom-scraper";
-    interface ITweets {
+/// <amd-module name="@scom/scom-twitter-sdk/utils/interface.ts" />
+declare module "@scom/scom-twitter-sdk/utils/interface.ts" {
+    interface IAccount {
+        username: string;
+        password: string;
+        emailAddress: string;
+    }
+    interface IConfig {
+        twitterAccounts: IAccount[];
+    }
+    interface ICredential {
+        username: string;
+        password: string;
+    }
+    interface ITweet {
         conversationId: string;
         id: string;
         hashtags: any[];
@@ -175,20 +187,21 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         html: string;
         views: number;
     }
-    interface ICredential {
-        username: string;
-        password: string;
-    }
+    export { IAccount, ITweet, IConfig, ICredential };
+}
+/// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
+declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
+    import { IConfig, ICredential, ITweet } from "@scom/scom-twitter-sdk/utils/interface.ts";
     class TwitterManager {
         private parser;
         private auth;
         private cookie;
         private api;
-        private twitterUserName;
-        private twitterPassword;
-        private twitterEmail;
+        private _config;
+        private _currentAccount;
+        private _currentAccountIndex;
         private scraperManager;
-        constructor(config?: IScraperConfig);
+        constructor(config?: IConfig);
         getProfile(username: string): Promise<any>;
         loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string): Promise<{
             authorization: string;
@@ -197,7 +210,16 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         getUserIdByScreenName(username: string): Promise<string>;
         searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
         private fetchSearchTweets;
-        getTweetsByUserName2(username: string, pages?: number): Promise<ITweets[]>;
+        private hasMoreTweets;
+        private enterUserName;
+        private enterPassword;
+        private enterEmailAddress;
+        private login;
+        private logout;
+        private redirect;
+        private useNextTwitterAccount;
+        private scrapTweets;
+        getTweetsByUserName2(username: string, since?: number, maxTweets?: number): Promise<ITweet[]>;
         getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
         fetchTweets(userId: string, maxTweets: number, cursor: string): Promise<{
             tweets: any[];
@@ -216,7 +238,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private getSearchTimeline;
         private installCsrfToken;
     }
-    export { TwitterManager, ScraperManager };
+    export { TwitterManager };
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/index.ts" />
 declare module "@scom/scom-twitter-sdk/managers/index.ts" {
