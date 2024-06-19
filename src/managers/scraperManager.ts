@@ -159,8 +159,8 @@ class TwitterManager {
         return this.parser.parseSearchTimelineUsers(timeline);
     }
 
-    async getTweetsByUserName2(username: string, pages: number = 3): Promise<ITweets[]> {
-        return this.scraperManager.scrapTweetsByUsername(username);
+    async getTweetsByUserName2(username: string, since: number = 0, maxTweets?: number): Promise<ITweets[]> {
+        return this.scraperManager.scrapTweetsByUsername(username, since, maxTweets);
     }
 
     async getTweetsByUserName(username: string, maxTweets?: number) {

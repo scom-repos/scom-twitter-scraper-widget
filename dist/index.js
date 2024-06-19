@@ -1192,8 +1192,8 @@ define("@scom/scom-twitter-sdk/managers/scraperManager.ts", ["require", "exports
             const timeline = await this.getSearchTimeline(query, maxTweets, cursor);
             return this.parser.parseSearchTimelineUsers(timeline);
         }
-        async getTweetsByUserName2(username, pages = 3) {
-            return this.scraperManager.scrapTweetsByUsername(username);
+        async getTweetsByUserName2(username, since = 0, maxTweets) {
+            return this.scraperManager.scrapTweetsByUsername(username, since, maxTweets);
         }
         async getTweetsByUserName(username, maxTweets) {
             await this.auth.updateGuestToken();

@@ -1,17 +1,13 @@
-import {ScraperManager} from "../src/managers/scraperManager";
-import { TWITTER_EMAIL_ADDRESS } from "./data/config";
-
-const CONFIG = require('./data/config');
+import { TwitterManager } from "../src/managers/scraperManager";
+import { twitterConfig } from "./data/config";
 
 (async () => {
-    const scraperManager = new ScraperManager({
-        TWITTER_USERNAME: CONFIG.TWITTER_USERNAME,
-        TWITTER_PASSWORD: CONFIG.TWITTER_PASSWORD,
-        TWITTER_EMAIL_ADDRESS: CONFIG.TWITTER_EMAIL_ADDRESS
+    const scraperManager = new TwitterManager({
+        twitterConfig
     });
     var args = process.argv.slice(2);
     const action = args[0];
-    switch(action) {
+    switch (action) {
         case 'get-profile-by-username': {
             const username = args[1];
             const profile = await scraperManager.getProfile(username);
@@ -28,7 +24,7 @@ const CONFIG = require('./data/config');
             let curtime = +new Date();
             const username = args[1];
             const maxTweets = args[2] ? parseInt(args[2]) : 200;
-            const tweets = await scraperManager.getTweetsByUserName2(username);
+            const tweets = await scraperManager.getTweetsByUserName2(username, maxTweets);
             console.log(tweets);
             console.log('Tweets count: ', tweets.length);
             console.log('Time lapsed', `${(+new Date() - curtime) / 1000}s`);
@@ -52,12 +48,12 @@ const CONFIG = require('./data/config');
             const username = args[1];
             const configs = process.argv.slice(3);
             const credentials: any = {};
-            for(let i = 0; i < configs.length; i++) {
-                if(configs[i] === '-u' && !!configs[i+1]) {
-                    credentials.username = configs[i+1];
+            for (let i = 0; i < configs.length; i++) {
+                if (configs[i] === '-u' && !!configs[i + 1]) {
+                    credentials.username = configs[i + 1];
                 }
-                else if(configs[i] === '-p' && !!configs[i+1]) {
-                    credentials.password = configs[i+1];
+                else if (configs[i] === '-p' && !!configs[i + 1]) {
+                    credentials.password = configs[i + 1];
                 }
             }
             const followers = await scraperManager.getFollowersByUserName(credentials, username);
@@ -68,12 +64,12 @@ const CONFIG = require('./data/config');
             const username = args[1];
             const configs = process.argv.slice(3);
             const credentials: any = {};
-            for(let i = 0; i < configs.length; i++) {
-                if(configs[i] === '-u' && !!configs[i+1]) {
-                    credentials.username = configs[i+1];
+            for (let i = 0; i < configs.length; i++) {
+                if (configs[i] === '-u' && !!configs[i + 1]) {
+                    credentials.username = configs[i + 1];
                 }
-                else if(configs[i] === '-p' && !!configs[i+1]) {
-                    credentials.password = configs[i+1];
+                else if (configs[i] === '-p' && !!configs[i + 1]) {
+                    credentials.password = configs[i + 1];
                 }
             }
             const following = await scraperManager.getFollowingByUserName(credentials, username);
@@ -84,12 +80,12 @@ const CONFIG = require('./data/config');
             const query = args[1];
             const configs = process.argv.slice(3);
             const credentials: any = {};
-            for(let i = 0; i < configs.length; i++) {
-                if(configs[i] === '-u' && !!configs[i+1]) {
-                    credentials.username = configs[i+1];
+            for (let i = 0; i < configs.length; i++) {
+                if (configs[i] === '-u' && !!configs[i + 1]) {
+                    credentials.username = configs[i + 1];
                 }
-                else if(configs[i] === '-p' && !!configs[i+1]) {
-                    credentials.password = configs[i+1];
+                else if (configs[i] === '-p' && !!configs[i + 1]) {
+                    credentials.password = configs[i + 1];
                 }
             }
             const tweets = await scraperManager.searchTweets(credentials, query, 50);
