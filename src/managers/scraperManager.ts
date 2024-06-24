@@ -155,25 +155,27 @@ class TwitterManager {
     }
 
     private async login(page: Page): Promise<void> {
-        const usernameSelector = '[name="text"]';
-        const passwordSelector = '[name="password"]';
-        await this.redirect(page, 'https://x.com/i/flow/login');
-        await this.enterUserName(page, this._currentAccount.username)
-        await this.enterPassword(page, this._currentAccount.password)
-        const response = await page.waitForResponse("https://api.x.com/1.1/onboarding/task.json");
-        if (response.ok && response.request().method() === 'POST') {
-            const data = await response.json();
-            if (data.subtasks?.length > 0) {
-                switch (data.subtasks[0].subtask_id) {
-                    case "LoginAcid": {
-                        await this.enterEmailAddress(page, this._currentAccount.emailAddress);
-                        break;
-                    }
-                    case "LoginSuccessSubtask": {
-                        return;
+        try {
+            await this.redirect(page, 'https://x.com/i/flow/login');
+            await this.enterUserName(page, this._currentAccount.username);
+            await this.enterPassword(page, this._currentAccount.password);
+            const response = await page.waitForResponse("https://api.x.com/1.1/onboarding/task.json");
+            if (response.ok && response.request().method() === 'POST') {
+                const data = await response.json();
+                if (data.subtasks?.length > 0) {
+                    switch (data.subtasks[0].subtask_id) {
+                        case "LoginAcid": {
+                            await this.enterEmailAddress(page, this._currentAccount.emailAddress);
+                            break;
+                        }
+                        case "LoginSuccessSubtask": {
+                            return;
+                        }
                     }
                 }
             }
+        } catch {
+            console.log('Failed to login')
         }
     }
 
@@ -192,7 +194,7 @@ class TwitterManager {
     }
 
     private useNextTwitterAccount(): boolean {
-        const newIndex = this._currentAccountIndex++;
+        const newIndex = ++this._currentAccountIndex;
         if (newIndex >= this._config.twitterAccounts.length) return true;
         this._currentAccount = this._config.twitterAccounts[newIndex];
         return false;
@@ -203,7 +205,16 @@ class TwitterManager {
         console.log('scrapTweets', this._currentAccount);
         console.log("Logging in...");
         await this.login(page);
-        await page.waitForNavigation();
+        try {
+            await page.waitForNavigation();
+        } catch {
+            const accountDepleted = this.useNextTwitterAccount();
+            if (accountDepleted) {
+                console.log('Account depleted.');
+                return [];
+            }
+            return await this.scrapTweets(browser, page, username, since, maxTweets);
+        }
         console.log("Redirecting to target page...");
         await this.redirect(page, `https://x.com/${username}`);
 
