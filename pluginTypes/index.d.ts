@@ -191,7 +191,7 @@ declare module "@scom/scom-twitter-sdk/utils/interface.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-sdk/managers/scraperManager.ts" />
 declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
-    import { IConfig, ICredential, ITweet } from "@scom/scom-twitter-sdk/utils/interface.ts";
+    import { IConfig, ITweet } from "@scom/scom-twitter-sdk/utils/interface.ts";
     class TwitterManager {
         private parser;
         private auth;
@@ -201,15 +201,11 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private _currentAccount;
         private _currentAccountIndex;
         private scraperManager;
+        private _browser;
+        private _page;
         constructor(config?: IConfig);
-        getProfile(username: string): Promise<any>;
-        loginAndGetHeader(username: string, password: string, email?: string, twoFactorSecret?: string): Promise<{
-            authorization: string;
-            cookie: string;
-        }>;
-        getUserIdByScreenName(username: string): Promise<string>;
-        searchTweets(credentials: ICredential, query: string, maxTweets?: number): Promise<any[]>;
-        private fetchSearchTweets;
+        init(): Promise<void>;
+        exit(): Promise<void>;
         private hasMoreTweets;
         private enterUserName;
         private enterPassword;
@@ -219,24 +215,7 @@ declare module "@scom/scom-twitter-sdk/managers/scraperManager.ts" {
         private redirect;
         private useNextTwitterAccount;
         private scrapTweets;
-        getTweetsByUserName2(username: string, since?: number, maxTweets?: number): Promise<ITweet[]>;
-        getTweetsByUserName(username: string, maxTweets?: number): Promise<any[]>;
-        fetchTweets(userId: string, maxTweets: number, cursor: string): Promise<{
-            tweets: any[];
-            next: any;
-            previous: any;
-        }>;
-        getTweetByTweetId(tweetId: string): Promise<any>;
-        getFollowersByUserName(credentials: ICredential, username: string, count?: number): Promise<any>;
-        getFollowersByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;
-        private fetchProfileFollowers;
-        getFollowingByUserName(credentials: ICredential, username: string, count?: number): Promise<any>;
-        getFollowingByUserId(credentials: ICredential, userId: string, count?: number): Promise<any>;
-        private fetchProfileFollowering;
-        private getUserTimeline;
-        private getTweetTimeline;
-        private getSearchTimeline;
-        private installCsrfToken;
+        getTweetsByUserName(username: string, since?: number, maxTweets?: number): Promise<ITweet[]>;
     }
     export { TwitterManager };
 }

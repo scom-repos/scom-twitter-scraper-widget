@@ -9,7 +9,7 @@
         "@ijstech/eth-contract": "^0.1.25",
         "@ijstech/eth-wallet": "^0.1.84",
         "@scom/scom-signer": "^0.1.0",
-        "@scom/scom-scraper": "https://github.com/scom-repos/scom-scraper",
+        "@scom/scom-scraper": "https://github.com/scom-repos/scom-scraper.git",
         "mqtt": "5.3.5",
         "puppeteer": "22.9.0"
     },
