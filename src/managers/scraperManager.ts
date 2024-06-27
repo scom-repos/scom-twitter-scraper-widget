@@ -217,8 +217,6 @@ class TwitterManager {
             //     }
             //     return await this.scrapTweets(browser, page, username, since, maxTweets);
             // }
-            console.log("Redirecting to target page...");
-            await this.redirect(page, `https://x.com/${username}`);
             // let response = null;
             let hasMore = true;
             let scrolldownTimer;
@@ -275,6 +273,10 @@ class TwitterManager {
                     }
                 }
             })
+
+            console.log("Redirecting to target page...");
+            await this.redirect(page, `https://x.com/${username}`);
+
             // do {
             //     try {
             //         try {
