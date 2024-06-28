@@ -7,7 +7,7 @@
         "declarationDir": "types",
         "declaration": true,
         "outDir": "lib",
-        "baseUrl": "."
+        "baseUrl": "."  
     },
     "include": [
       "src/**/*"

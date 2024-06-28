@@ -2,8 +2,6 @@ import { IConfig, ITweet } from "../utils/interface";
 declare class TwitterManager {
     private parser;
     private auth;
-    private cookie;
-    private api;
     private _config;
     private _currentAccount;
     private _currentAccountIndex;
@@ -12,6 +10,7 @@ declare class TwitterManager {
     private _page;
     constructor(config?: IConfig);
     init(): Promise<void>;
+    checkIsLogin(): Promise<boolean>;
     exit(): Promise<void>;
     private hasMoreTweets;
     private enterUserName;
