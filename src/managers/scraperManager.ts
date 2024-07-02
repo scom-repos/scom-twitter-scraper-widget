@@ -52,14 +52,18 @@ class TwitterManager {
         this._browser = browser;
         this._page = page;
 
-        const storedCookies = fs.readFileSync(path.join(process.cwd(), 'twitter_cookies.json'));
-        if(storedCookies) {
-            const storedCookiesList = JSON.parse(storedCookies.toString());
-            await page.setCookie(...storedCookiesList);
+        const twitterCookiesJsonFilePath = path.join(__dirname, '../twitter_cookies.json');
+        const exist = fs.existsSync(twitterCookiesJsonFilePath);
+        if (exist) {
+            const storedCookies = fs.readFileSync(twitterCookiesJsonFilePath);
+            if (storedCookies) {
+                const storedCookiesList = JSON.parse(storedCookies.toString());
+                await page.setCookie(...storedCookiesList);
+            }
         }
 
         const isLogin = await this.checkIsLogin();
-        if(!isLogin) {
+        if (!isLogin) {
             let loginSuccess = await this.login();
             console.log('loginSuccess', loginSuccess);
             while (!loginSuccess) {
@@ -67,10 +71,10 @@ class TwitterManager {
                 this.useNextTwitterAccount();
                 loginSuccess = await this.login();
             }
-            if(loginSuccess) {
+            if (loginSuccess) {
                 console.log('Writing cookies into local storage...');
                 const cookies = await page.cookies();
-                fs.writeFileSync(path.join(process.cwd(), 'twitter_cookies.json'), JSON.stringify(cookies, null, 2));
+                fs.writeFileSync(twitterCookiesJsonFilePath, JSON.stringify(cookies, null, 2));
             }
         }
     }
@@ -78,12 +82,12 @@ class TwitterManager {
     async checkIsLogin() {
         await this.redirect('https://x.com/home');
         try {
-            await this._page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', {timeout: 3000});
+            await this._page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 3000 });
         }
-        catch(e) {
+        catch (e) {
             return false;
         }
-        await this._page.screenshot({path: 'homepage_screenshot.png'});
+        await this._page.screenshot({ path: 'homepage_screenshot.png' });
         return true;
     }
 
