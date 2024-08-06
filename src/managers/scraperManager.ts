@@ -4,7 +4,6 @@ import { IAccount, IConfig, ICredential, ITweet } from "../utils/interface";
 import ScraperManager, { Browser, Page } from "@scom/scom-scraper";
 import fs from "fs";
 import path from "path";
-import { mapToCurveSimpleSWU } from "@scom/scom-social-sdk/types/core/curves/abstract/weierstrass";
 import { sleep } from "../utils";
 // import path from "path";
 // import { sleep } from "../utils";
@@ -19,6 +18,8 @@ import { sleep } from "../utils";
 // import Cookie from "../utils/cookie";
 // import API from "../utils/API";
 
+const TWITTER_COOKIES_JSON_FILE_PATH = path.join(process.cwd(), 'data', 'twitter_cookies.json');
+
 class TwitterManager {
     private parser: Parser;
     private auth: Auth;
@@ -28,8 +29,6 @@ class TwitterManager {
     private _currentAccount: IAccount;
     private _currentAccountIndex: number = -1;
     private scraperManager: ScraperManager;
-    private _browser: Browser;
-    private _page: Page;
     constructor(config?: IConfig) {
         this.parser = new Parser();
         // this.cookie = new Cookie();
@@ -48,52 +47,23 @@ class TwitterManager {
         if (!scraper) {
             throw new Error('cannot open browser and page');
         }
-        const { browser, page } = scraper;
-        this._browser = browser;
-        this._page = page;
-
-        const twitterCookiesJsonFilePath = path.join(__dirname, '../twitter_cookies.json');
-        const exist = fs.existsSync(twitterCookiesJsonFilePath);
-        if (exist) {
-            const storedCookies = fs.readFileSync(twitterCookiesJsonFilePath);
-            if (storedCookies) {
-                const storedCookiesList = JSON.parse(storedCookies.toString());
-                await page.setCookie(...storedCookiesList);
-            }
-        }
-
-        const isLogin = await this.checkIsLogin();
-        if (!isLogin) {
-            let loginSuccess = await this.login();
-            console.log('loginSuccess', loginSuccess);
-            while (!loginSuccess) {
-                console.log('Trying another account...')
-                this.useNextTwitterAccount();
-                loginSuccess = await this.login();
-            }
-            if (loginSuccess) {
-                console.log('Writing cookies into local storage...');
-                const cookies = await page.cookies();
-                fs.writeFileSync(twitterCookiesJsonFilePath, JSON.stringify(cookies, null, 2));
-            }
-        }
     }
 
-    async checkIsLogin() {
-        await this.redirect('https://x.com/home');
+    async checkIsLogin(page: Page) {
+        await this.redirect(page, 'https://x.com/home');
         try {
-            await this._page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 3000 });
+            await page.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', { timeout: 15000 });
         }
         catch (e) {
             return false;
         }
-        await this._page.screenshot({ path: 'homepage_screenshot.png' });
+        await page.screenshot({ path: 'homepage_screenshot.png' });
         return true;
     }
 
-    async exit() {
-        await this.logout();
-        await this._browser.close();
+    async exit(browser: Browser, page: Page) {
+        // await this.logout(page);
+        await browser.close();
     }
 
     private hasMoreTweets = (data: any) => {
@@ -103,68 +73,91 @@ class TwitterManager {
         return timelineAddEntries[0].entries?.length > 2;
     }
 
-    private async enterUserName(username: string) {
+    private async enterUserName(page: Page, username: string) {
         const usernameSelector = '[name="text"]';
         // const usernameInput = await page.$(usernameSelector);
         // await usernameInput.type(username);
-        await this._page.waitForSelector(usernameSelector);
-        await this._page.type(usernameSelector, username);
+        await page.waitForSelector(usernameSelector);
+        await page.type(usernameSelector, username);
         console.log('Entering username');
-        await this._page.keyboard.press("Enter");
+        await page.keyboard.press("Enter");
     }
 
-    private async enterPassword(password: string) {
+    private async enterPassword(page: Page, password: string) {
         const passwordSelector = '[name="password"]';
         // const passwordInput = await page.$(passwordSelector);
         // await passwordInput.type(password);
-        await this._page.waitForSelector(passwordSelector);
-        await this._page.type(passwordSelector, password);
+        await page.waitForSelector(passwordSelector);
+        await page.type(passwordSelector, password);
         console.log('Entering password');
-        await this._page.keyboard.press("Enter");
+        await page.keyboard.press("Enter");
     }
 
-    private async enterEmailAddress(emailAddress: string) {
+    private async enterEmailAddress(page: Page, emailAddress: string) {
         const emailAddressSelector = '[data-testid="ocfEnterTextTextInput"]';
         // const emailAddressInput = await page.$(emailAddressSelector);
         // await emailAddressInput.type(emailAddress);
-        await this._page.waitForSelector(emailAddressSelector);
-        await this._page.type(emailAddressSelector, emailAddress);
+        await page.waitForSelector(emailAddressSelector);
+        await page.type(emailAddressSelector, emailAddress);
         console.log('Entering email address');
-        await this._page.keyboard.press("Enter");
+        await page.keyboard.press("Enter");
     }
 
-    private async login(): Promise<boolean> {
+    private async loginWithCookie(page: Page) {
+        const exist = fs.existsSync(TWITTER_COOKIES_JSON_FILE_PATH);
+        if (exist) {
+            const storedCookies = fs.readFileSync(TWITTER_COOKIES_JSON_FILE_PATH);
+            if (storedCookies) {
+                const storedCookiesList = JSON.parse(storedCookies.toString());
+                await page.setCookie(...storedCookiesList);
+            }
+        }
+        const isLogin = await this.checkIsLogin(page);
+        if (!isLogin) {
+            let loginSuccess = await this.login(page);
+            while (!loginSuccess) {
+                console.log('Trying another account...')
+                this.useNextTwitterAccount();
+                loginSuccess = await this.login(page);
+            }
+            if (loginSuccess) {
+                console.log('Writing cookies into local storage...');
+                const cookies = await page.cookies();
+                fs.writeFileSync(TWITTER_COOKIES_JSON_FILE_PATH, JSON.stringify(cookies, null, 2));
+            }
+        }
+    }
+
+    private async login(page: Page): Promise<boolean> {
         return new Promise<boolean>(async (resolve, reject) => {
             try {
                 const timeout = setTimeout(() => {
                     resolve(false);
                 }, 30000)
                 console.log('Logging in...');
-                await this.redirect('https://x.com/i/flow/login');
-                this._page.on('response', async (response) => {
+                await this.redirect(page, 'https://x.com/i/flow/login');
+                page.on('response', async (response) => {
                     if (response.url() !== 'https://api.x.com/1.1/onboarding/task.json') return;
                     if (response.ok() && response.request().method() === 'POST') {
                         console.log(`[${response.request().method()}] ${response.url()} - ${response.ok()}`);
                         try {
                             const data = await response.json();
-                            console.log(data);
-
                             if (data.subtasks?.length > 0) {
                                 switch (data.subtasks[0].subtask_id) {
                                     case "LoginEnterUserIdentifierSSO":
-                                        await this.enterUserName(this._currentAccount.username);
+                                        await this.enterUserName(page, this._currentAccount.username);
                                         break;
                                     case "LoginEnterPassword":
-                                        await this.enterPassword(this._currentAccount.password);
+                                        await this.enterPassword(page, this._currentAccount.password);
                                         break;
                                     case "LoginEnterAlternateIdentifierSubtask":
                                     case "LoginAcid": {
-                                        await this.enterEmailAddress(this._currentAccount.emailAddress);
+                                        await this.enterEmailAddress(page, this._currentAccount.emailAddress);
                                         break;
                                     }
                                     case "LoginSuccessSubtask": {
                                         clearTimeout(timeout);
-                                        this._page.removeAllListeners('response');
+                                        page.removeAllListeners('response');
                                         resolve(true);
                                         break;
                                     }
@@ -205,20 +198,20 @@ class TwitterManager {
 
     }
 
-    private async logout() {
+    private async logout(page: Page) {
         const logoutButtonSelector = '[data-testid="confirmationSheetConfirm"]';
         console.log('Logging out...');
-        await this._page.goto('https://x.com/logout');
+        await page.goto('https://x.com/logout');
         // const logoutButton = await page.$(logoutButtonSelector);
         // await logoutButton.click();
-        await this._page.waitForSelector(logoutButtonSelector);
-        await this._page.click(logoutButtonSelector);
-        await this._page.waitForNavigation();
+        await page.waitForSelector(logoutButtonSelector);
+        await page.click(logoutButtonSelector);
+        await page.waitForNavigation();
         console.log('Logged out.');
     }
 
-    private async redirect(url: string) {
-        return this._page.goto(url);
+    private async redirect(page: Page, url: string) {
+        return page.goto(url);
     }
 
     private useNextTwitterAccount(): boolean {
@@ -232,8 +225,14 @@ class TwitterManager {
         // return false;
     }
 
-    private async scrapTweets(username: string, since: number = 0, maxTweets?: number): Promise<ITweet[]> {
+    private async scrapTweets(username: string, since: number = 0, til?: number, maxTweets?: number): Promise<{ success: boolean; message?: string; tweets?: ITweet[] }> {
         return new Promise(async (resolve, reject) => {
+            console.log('username', username);
+            console.log('since', since);
+            console.log('til', til);
+            console.log('maxTweets', maxTweets);
+            const { browser, page } = await this.scraperManager.getBrowserAndPage();
+            await this.loginWithCookie(page);
             let tweets: ITweet[] = [];
             // console.log('scrapTweets', this._currentAccount);
             // console.log("Logging in...");
@@ -251,24 +250,39 @@ class TwitterManager {
             // let response = null;
             let hasMore = true;
             let scrolldownTimer;
-            this._page.on('response', async (response) => {
+            page.on('response', async (response) => {
+                if (response.url().indexOf('UserByScreenName') >= 0 && response.request().method() === 'GET') {
+                    console.log(response.url());
+                    if (!response.ok()) {
+                        console.log('Failed to get screenname', await response.text());
+                    }
+                    const userInfo = await response.json();
+                    if (userInfo.data.user === undefined) {
+                        page.removeAllListeners('response');
+                        this.exit(browser, page);
+                        return resolve({
+                            success: false,
+                            message: 'User does not exist.'
+                        })
+                    }
+                }
                 if (response.url().indexOf('UserTweets') >= 0 && response.request().method() === 'GET') {
                     if (scrolldownTimer) {
                         clearTimeout(scrolldownTimer)
                     }
                     if (!response.ok()) {
-                        await this.logout();
+                        await this.logout(page);
                         this.useNextTwitterAccount();
-                        await this.login();
-                        await this.redirect(`https://x.com/${username}`);
-                        await this._page.waitForNavigation();
+                        await this.login(page);
+                        await this.redirect(page, `https://x.com/${username}`);
+                        await page.waitForNavigation({ timeout: 30000 });
                     }
                     else {
                         const responseData = await response.json();
                         const content = this.parser.parseTimelineTweetsV2(responseData);
                         tweets = [...tweets, ...content.tweets];
                         let isTimeValid = true;
-                        if (since && tweets.length) {
+                        if (since && til && tweets.length) {
                             const oldestTweet = tweets.sort((a, b) => b.timestamp - a.timestamp)[0];
                             isTimeValid = (oldestTweet.timestamp * 1000) > since;
                         }
@@ -276,7 +290,7 @@ class TwitterManager {
                         if (hasMore) {
                             console.log("Scrolling down");
                             scrolldownTimer = setTimeout(async () => {
-                                await this._page.evaluate(() => {
+                                await page.evaluate(() => {
                                     window.scrollTo(0, document.body.scrollHeight);
                                 });
                             }, 2000)
@@ -285,20 +299,23 @@ class TwitterManager {
                             if (maxTweets) {
                                 tweets = tweets.slice(0, maxTweets);
                             }
-                            if (since) {
-                                tweets = tweets.filter(v => (v.timestamp * 1000) >= since);
+                            if (since && til) {
+                                tweets = tweets.filter(v => (v.timestamp * 1000) >= since && (v.timestamp * 1000) <= til);
                             }
                             console.log('Tweets scraped. Total scraped: ', tweets.length)
-                            this._page.removeAllListeners('response');
-                            return resolve(tweets);
+                            page.removeAllListeners('response');
+                            this.exit(browser, page);
+                            return resolve({
+                                success: true,
+                                tweets
+                            });
                         }
                     }
                 }
             })
 
             console.log("Redirecting to target page...");
-            await this.redirect(`https://x.com/${username}`);
-
+            await this.redirect(page, `https://x.com/${username}`);
             // do {
             //     try {
             //         try {
@@ -356,7 +373,7 @@ class TwitterManager {
         });
     }
 
-    async getTweetsByUserName(username: string, since: number = 0, maxTweets?: number): Promise<ITweet[]> {
+    async getTweetsByUserName(username: string, since: number = 0, til?: number, maxTweets?: number): Promise<{ success: boolean; message?: string; tweets?: ITweet[] }> {
         let tweets: ITweet[] = [];
         // const scraper = await this.scraperManager.getBrowserAndPage();
         // if (!scraper) {
@@ -365,13 +382,17 @@ class TwitterManager {
         // }
         // const { browser, page } = scraper;
         try {
-            tweets = await this.scrapTweets(username, since, maxTweets);
+            const result = await this.scrapTweets(username, since, til, maxTweets);
+            return result;
         } catch (e) {
             console.log(e);
+            return {
+                success: false,
+                message: e.message
+            }
         } finally {
             // await browser.close();
         }
-        return tweets;
     }
 
     // async getProfile(username: string) {
