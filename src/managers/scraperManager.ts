@@ -231,6 +231,19 @@ class TwitterManager {
             console.log('since', since);
             console.log('til', til);
             console.log('maxTweets', maxTweets);
+            if(!username) {
+                return resolve({
+                    success: false,
+                    message: "Username is empty."
+                });
+            }
+            if(since && til && since > til) {
+                return resolve({
+                    success: false,
+                    message: "Start date should be less or equal than end date."
+                })
+            }
+            
             const { browser, page } = await this.scraperManager.getBrowserAndPage();
             await this.loginWithCookie(page);
             let tweets: ITweet[] = [];
