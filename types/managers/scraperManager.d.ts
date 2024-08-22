@@ -1,5 +1,4 @@
 import { IConfig, ITweet } from "../utils/interface";
-import { Browser, Page } from "@scom/scom-scraper";
 declare class TwitterManager {
     private parser;
     private auth;
@@ -9,8 +8,8 @@ declare class TwitterManager {
     private scraperManager;
     constructor(config?: IConfig);
     init(): Promise<void>;
-    checkIsLogin(page: Page): Promise<boolean>;
-    exit(browser: Browser, page: Page): Promise<void>;
+    checkIsLogin(): Promise<boolean>;
+    exit(): Promise<void>;
     private hasMoreTweets;
     private enterUserName;
     private enterPassword;
