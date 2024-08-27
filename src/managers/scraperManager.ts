@@ -1,22 +1,9 @@
 import Auth from "../utils/auth";
 import Parser from "../utils/parser";
-import { IAccount, IConfig, ICredential, ITweet } from "../utils/interface";
-import ScraperManager from "@scom/scom-scraper";
+import { IAccount, IConfig, ITweet } from "../utils/interface";
+import {IScraperEngine} from "@scom/scom-scraper";
 import fs from "fs";
 import path from "path";
-import { sleep } from "../utils";
-// import path from "path";
-// import { sleep } from "../utils";
-// import {
-//     BEARER_TOKEN,
-//     GET_FOLLOWERS_BY_USER_ID,
-//     GET_FOLLOWING_BY_USER_ID,
-//     GET_TWEET_BY_ID,
-//     GET_TWEETS_BY_USER_ID,
-//     GET_USER_BY_SCREENAME, SEARCH_TIMELINE
-// } from "../const";
-// import Cookie from "../utils/cookie";
-// import API from "../utils/API";
 
 const TWITTER_COOKIES_JSON_FILE_PATH = path.join(process.cwd(), 'data', 'twitter_cookies.json');
 
@@ -28,13 +15,13 @@ class TwitterManager {
     private _config: IConfig;
     private _currentAccount: IAccount;
     private _currentAccountIndex: number = -1;
-    private scraperManager: ScraperManager;
-    constructor(config?: IConfig) {
+    private scraperEngine: IScraperEngine;
+    constructor(scraperEngine: IScraperEngine, config?: IConfig) {
         this.parser = new Parser();
         // this.cookie = new Cookie();
         // this.auth = new Auth(this.cookie);
         // this.api = new API(this.auth, this.cookie);
-        this.scraperManager = new ScraperManager();
+        this.scraperEngine = scraperEngine;
         this._config = config;
         if (config.twitterAccounts?.length > 0) {
             this._currentAccount = config.twitterAccounts[0];
@@ -47,13 +34,13 @@ class TwitterManager {
         // if (!scraper) {
         //     throw new Error('cannot open browser and page');
         // }
-        await this.scraperManager.init();
+        await this.scraperEngine.init();
     }
 
     async checkIsLogin() {
         await this.redirect('https://x.com/home');
         try {
-            await this.scraperManager.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', 15000);
+            await this.scraperEngine.waitForSelector('[data-testid="SideNav_AccountSwitcher_Button"]', 15000);
         }
         catch (e) {
             return false;
@@ -62,7 +49,7 @@ class TwitterManager {
     }
 
     async exit() {
-        await this.scraperManager.destroy();
+        await this.scraperEngine.destroy();
         // await this.logout(page);
         // await browser.close();
     }
@@ -78,30 +65,30 @@ class TwitterManager {
         const usernameSelector = '[name="text"]';
         // const usernameInput = await page.$(usernameSelector);
         // await usernameInput.type(username);
-        await this.scraperManager.waitForSelector(usernameSelector);
-        await this.scraperManager.type(usernameSelector, username);
+        await this.scraperEngine.waitForSelector(usernameSelector);
+        await this.scraperEngine.type(usernameSelector, username);
         console.log('Entering username');
-        await this.scraperManager.keyboard.press("Enter");
+        await this.scraperEngine.keyboard.press("Enter");
     }
 
     private async enterPassword(password: string) {
         const passwordSelector = '[name="password"]';
         // const passwordInput = await page.$(passwordSelector);
         // await passwordInput.type(password);
-        await this.scraperManager.waitForSelector(passwordSelector);
-        await this.scraperManager.type(passwordSelector, password);
+        await this.scraperEngine.waitForSelector(passwordSelector);
+        await this.scraperEngine.type(passwordSelector, password);
         console.log('Entering password');
-        await this.scraperManager.keyboard.press("Enter");
+        await this.scraperEngine.keyboard.press("Enter");
     }
 
     private async enterEmailAddress(emailAddress: string) {
         const emailAddressSelector = '[data-testid="ocfEnterTextTextInput"]';
         // const emailAddressInput = await page.$(emailAddressSelector);
         // await emailAddressInput.type(emailAddress);
-        await this.scraperManager.waitForSelector(emailAddressSelector);
-        await this.scraperManager.type(emailAddressSelector, emailAddress);
+        await this.scraperEngine.waitForSelector(emailAddressSelector);
+        await this.scraperEngine.type(emailAddressSelector, emailAddress);
         console.log('Entering email address');
-        await this.scraperManager.keyboard.press("Enter");
+        await this.scraperEngine.keyboard.press("Enter");
     }
 
     private async loginWithCookie() {
@@ -110,7 +97,7 @@ class TwitterManager {
             const storedCookies = fs.readFileSync(TWITTER_COOKIES_JSON_FILE_PATH);
             if (storedCookies) {
                 const storedCookiesList = JSON.parse(storedCookies.toString());
-                await this.scraperManager.setCookie(...storedCookiesList);
+                await this.scraperEngine.setCookie(...storedCookiesList);
             }
         }
         const isLogin = await this.checkIsLogin();
@@ -123,7 +110,7 @@ class TwitterManager {
             }
             if (loginSuccess) {
                 console.log('Writing cookies into local storage...');
-                const cookies = await this.scraperManager.getCookies();
+                const cookies = await this.scraperEngine.getCookies();
                 fs.writeFileSync(TWITTER_COOKIES_JSON_FILE_PATH, JSON.stringify(cookies, null, 2));
             }
         }
@@ -137,7 +124,7 @@ class TwitterManager {
                 }, 30000)
                 console.log('Logging in...');
                 await this.redirect('https://x.com/i/flow/login');
-                this.scraperManager.on('response', async (response) => {
+                this.scraperEngine.on('response', async (response) => {
                     if (response.url() !== 'https://api.x.com/1.1/onboarding/task.json') return;
                     if (response.ok() && response.request().method() === 'POST') {
                         console.log(`[${response.request().method()}] ${response.url()} - ${response.ok()}`);
@@ -158,7 +145,7 @@ class TwitterManager {
                                     }
                                     case "LoginSuccessSubtask": {
                                         clearTimeout(timeout);
-                                        this.scraperManager.removeAllListeners('response');
+                                        this.scraperEngine.removeAllListeners('response');
                                         resolve(true);
                                         break;
                                     }
@@ -202,17 +189,17 @@ class TwitterManager {
     private async logout() {
         const logoutButtonSelector = '[data-testid="confirmationSheetConfirm"]';
         console.log('Logging out...');
-        await this.scraperManager.goto('https://x.com/logout');
+        await this.scraperEngine.goto('https://x.com/logout');
         // const logoutButton = await page.$(logoutButtonSelector);
         // await logoutButton.click();
-        await this.scraperManager.waitForSelector(logoutButtonSelector);
-        await this.scraperManager.click(logoutButtonSelector);
-        await this.scraperManager.waitForNavigation();
+        await this.scraperEngine.waitForSelector(logoutButtonSelector);
+        await this.scraperEngine.click(logoutButtonSelector);
+        await this.scraperEngine.waitForNavigation();
         console.log('Logged out.');
     }
 
     private async redirect(url: string) {
-        return this.scraperManager.goto(url);
+        return this.scraperEngine.goto(url);
     }
 
     private useNextTwitterAccount(): boolean {
@@ -245,7 +232,6 @@ class TwitterManager {
                 })
             }
             
-            const { browser, page } = await this.scraperManager.getBrowserAndPage();
             await this.loginWithCookie();
             let tweets: ITweet[] = [];
             // console.log('scrapTweets', this._currentAccount);
@@ -264,7 +250,7 @@ class TwitterManager {
             // let response = null;
             let hasMore = true;
             let scrolldownTimer;
-            this.scraperManager.on('response', async (response) => {
+            this.scraperEngine.on('response', async (response) => {
                 if (response.url().indexOf('UserByScreenName') >= 0 && response.request().method() === 'GET') {
                     console.log(response.url());
                     if (!response.ok()) {
@@ -272,7 +258,7 @@ class TwitterManager {
                     }
                     const userInfo = await response.json();
                     if (userInfo.data.user === undefined) {
-                        this.scraperManager.removeAllListeners('response');
+                        this.scraperEngine.removeAllListeners('response');
                         this.exit();
                         return resolve({
                             success: false,
@@ -289,7 +275,7 @@ class TwitterManager {
                         this.useNextTwitterAccount();
                         await this.login();
                         await this.redirect(`https://x.com/${username}`);
-                        await this.scraperManager.waitForNavigation(30000);
+                        await this.scraperEngine.waitForNavigation(30000);
                     }
                     else {
                         const responseData = await response.json();
@@ -304,7 +290,7 @@ class TwitterManager {
                         if (hasMore) {
                             console.log("Scrolling down");
                             scrolldownTimer = setTimeout(async () => {
-                                await this.scraperManager.scrollToBottom();
+                                await this.scraperEngine.scrollToBottom();
                             }, 2000)
                         }
                         else {
@@ -315,7 +301,7 @@ class TwitterManager {
                                 tweets = tweets.filter(v => (v.timestamp * 1000) >= since && (v.timestamp * 1000) <= til);
                             }
                             console.log('Tweets scraped. Total scraped: ', tweets.length)
-                            this.scraperManager.removeAllListeners('response');
+                            this.scraperEngine.removeAllListeners('response');
                             this.exit();
                             return resolve({
                                 success: true,

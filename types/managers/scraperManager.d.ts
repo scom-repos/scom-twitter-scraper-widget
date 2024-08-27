@@ -1,12 +1,13 @@
 import { IConfig, ITweet } from "../utils/interface";
+import { IScraperEngine } from "@scom/scom-scraper";
 declare class TwitterManager {
     private parser;
     private auth;
     private _config;
     private _currentAccount;
     private _currentAccountIndex;
-    private scraperManager;
-    constructor(config?: IConfig);
+    private scraperEngine;
+    constructor(scraperEngine: IScraperEngine, config?: IConfig);
     init(): Promise<void>;
     checkIsLogin(): Promise<boolean>;
     exit(): Promise<void>;
