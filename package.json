@@ -1,6 +1,6 @@
 {
     "name": "@scom/scom-twitter-sdk",
-    "version": "0.1.23",
+    "version": "0.1.1",
     "main": "lib/index.js",
     "plugin": "dist/index.js",
     "pluginTypes": "pluginTypes/index.d.ts",
@@ -9,7 +9,7 @@
         "@ijstech/eth-contract": "^0.1.25",
         "@ijstech/eth-wallet": "^0.1.84",
         "@scom/scom-signer": "^0.1.0",
-        "@scom/scom-scraper": "https://github.com/scom-repos/scom-scraper.git"
+        "@scom/scom-scraper": "^0.1.2"
     },
     "devDependencies": {
         "@ijstech/compiler": "^0.1.35",
