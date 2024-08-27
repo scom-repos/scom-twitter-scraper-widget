@@ -1,2 +1,3 @@
 import { TwitterManager} from "./scraperManager";
-export { TwitterManager } 
+import { ITweet } from "src/utils/interface";
+export { TwitterManager, ITweet } 
