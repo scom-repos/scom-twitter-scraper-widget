@@ -1,4 +1,4 @@
-import Auth from "../utils/auth";
+import Auth from "./auth";
 import Cookie from "./cookie";
 type API_METHOD = 'GET' | 'POST';
 export default class API {
