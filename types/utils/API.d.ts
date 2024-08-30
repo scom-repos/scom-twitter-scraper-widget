@@ -1,6 +1,6 @@
 import Auth from "./auth";
 import Cookie from "./cookie";
-type API_METHOD = 'GET' | 'POST';
+declare type API_METHOD = 'GET' | 'POST';
 export default class API {
     private auth;
     private cookie;
