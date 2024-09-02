@@ -1,11 +1,7 @@
-import Auth from "@scom/scom-twitter-scraper/utils/auth";
-import Parser from "@scom/scom-twitter-scraper/utils/parser";
-import { IAccount, IConfig, ITweet } from "@scom/scom-twitter-scraper/utils/interface";
+import Auth from "../utils/auth";
+import Parser from "../utils/parser";
+import { IAccount, IConfig, ITweet } from "../utils/interface";
 import {IScraperEngine} from "@scom/scom-scraper";
-import fs from "fs";
-import path from "path";
-
-const TWITTER_COOKIES_JSON_FILE_PATH = path.join(process.cwd(), 'data', 'twitter_cookies.json');
 
 class TwitterManager {
     private parser: Parser;
@@ -92,6 +88,13 @@ class TwitterManager {
     }
 
     private async loginWithCookie() {
+        // @ts-ignore
+        const fs = require('fs');
+        // @ts-ignore
+        const path = require('path');
+        // @ts-ignore
+        const TWITTER_COOKIES_JSON_FILE_PATH = path.join(process.cwd(), 'data', 'twitter_cookies.json');
+
         const exist = fs.existsSync(TWITTER_COOKIES_JSON_FILE_PATH);
         if (exist) {
             const storedCookies = fs.readFileSync(TWITTER_COOKIES_JSON_FILE_PATH);

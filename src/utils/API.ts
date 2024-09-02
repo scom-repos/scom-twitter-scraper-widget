@@ -1,6 +1,6 @@
-import Auth from "@scom/scom-twitter-scraper/utils/auth";
-import Cookie from "@scom/scom-twitter-scraper/utils/cookie";
-import {BEARER_TOKEN} from "@scom/scom-twitter-scraper/const";
+import Auth from "./auth";
+import Cookie from "./cookie";
+import {BEARER_TOKEN} from "../const";
 
 type API_METHOD = 'GET' | 'POST';
 

@@ -1,12 +1,4 @@
 {
     "type": "sdk",
-    "version": "0.1.1",
-    "modules": {
-        "@scom/scom-twitter-scraper/utils": {
-            "path": "utils"
-        },
-        "@scom/scom-twitter-scraper/managers": {
-            "path": "managers"
-        }
-    }
+    "version": "0.1.1"
 }

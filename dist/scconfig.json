@@ -1,0 +1,8 @@
+{
+    "name": "@scom/scom-twitter-scraper",
+    "type": "sdk",
+    "version": "0.1.2",
+    "dependencies": [
+        "@scom/scom-scraper"
+    ]
+}

@@ -1,4 +1,4 @@
-declare type CookieObject = {
+type CookieObject = {
     domain?: string;
     secure?: boolean;
     httpOnly?: boolean;
