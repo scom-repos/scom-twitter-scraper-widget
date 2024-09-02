@@ -1,8 +1,14 @@
 { 
     "compilerOptions": {
-        "target": "es2017",
-        "module": "commonjs",
+        "target": "ES2017",
+        "moduleResolution": "Node",
+        "experimentalDecorators": true,
+        "jsx": "preserve",
+        "jsxFactory": "this.$render",
+        "jsxFragmentFactory": "this.$render",
         "esModuleInterop": true,
+        "resolveJsonModule": true,
+        "forceConsistentCasingInFileNames": true,
         "removeComments": true,
         "declarationDir": "types",
         "declaration": true,
