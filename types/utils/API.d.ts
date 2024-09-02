@@ -1,4 +1,4 @@
-import Auth from "./auth";
+import Auth from "@scom/scom-twitter-scraper/types/utils/auth";
 import Cookie from "./cookie";
 declare type API_METHOD = 'GET' | 'POST';
 export default class API {
