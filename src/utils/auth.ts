@@ -1,5 +1,5 @@
-import {ACTIVATE_GUEST_API, BEARER_TOKEN} from "../const";
-import Cookie from "./cookie";
+import {ACTIVATE_GUEST_API, BEARER_TOKEN} from "@scom/scom-twitter-scraper/const";
+import Cookie from "@scom/scom-twitter-scraper/utils/cookie";
 
 export default class Auth {
     constructor(private cookie: Cookie) {

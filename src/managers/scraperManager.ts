@@ -1,6 +1,6 @@
-import Auth from "../utils/auth";
-import Parser from "../utils/parser";
-import { IAccount, IConfig, ITweet } from "../utils/interface";
+import Auth from "@scom/scom-twitter-scraper/utils/auth";
+import Parser from "@scom/scom-twitter-scraper/utils/parser";
+import { IAccount, IConfig, ITweet } from "@scom/scom-twitter-scraper/utils/interface";
 import {IScraperEngine} from "@scom/scom-scraper";
 import fs from "fs";
 import path from "path";

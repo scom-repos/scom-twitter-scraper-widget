@@ -1,4 +1,4 @@
-import {Validators} from "./validators";
+import {Validators} from "@scom/scom-twitter-scraper/utils/validators";
 
 const MONTH_TO_NUM = {
     jan: 0,

@@ -7,7 +7,11 @@
         "declarationDir": "types",
         "declaration": true,
         "outDir": "lib",
-        "baseUrl": "."  
+        "baseUrl": ".",
+        "paths": {
+            "@ijstech/components": ["node_modules/@ijstech/components"],
+            "@scom/scom-twitter-scraper/*": ["./src/*"]
+        }
     },
     "include": [
       "src/**/*"

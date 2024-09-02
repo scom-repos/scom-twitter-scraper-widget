@@ -1,3 +1,3 @@
-import { TwitterManager} from "./scraperManager";
-import { ITweet } from "../utils/interface";
+import { TwitterManager} from "@scom/scom-twitter-scraper/managers/scraperManager";
+import { ITweet } from "@scom/scom-twitter-scraper/utils/interface";
 export { TwitterManager, ITweet } 
