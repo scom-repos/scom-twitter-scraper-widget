@@ -13,6 +13,9 @@ import {
     moment,
     Switch
 } from '@ijstech/components';
+import {TwitterManager} from "./managers/scraperManager";
+import {ITweet} from "./utils/interface";
+import Parser from "./utils/parser";
 import { paginationStyle, tweetPreviewStyle } from './index.css.ts';
 import { ICommunityInfo } from "@scom/scom-social-sdk";
 const Theme = Styles.Theme.ThemeVars;
@@ -27,35 +30,6 @@ interface IPhoto {
 const textCenterStyle = Styles.style({
     textAlign: 'center'
 })
-
-interface ITweet {
-    conversationId: string;
-    hashtags: any[],
-    html: string;
-    id: string;
-    isPin: boolean;
-    isQuoted: boolean;
-    isReply: boolean;
-    isRetweet: boolean;
-    likes: number;
-    markdown: string;
-    mentions: any[];
-    name: string;
-    permanentUrl: string;
-    photos: IPhoto[];
-    replies: number;
-    retweets: number;
-    sensitiveContent: boolean;
-    text: string;
-    thread: any[];
-    timeParsed: string;
-    timestamp: number;
-    urls: any[];
-    userId: string;
-    username: string;
-    videos: any[];
-    views: number;
-}
 
 declare global {
     namespace JSX {
@@ -97,13 +71,13 @@ export class ImportTweetsModule extends Module {
 
     private allTweets: ITweet[];
     private checkedTweets: ITweet[] = [];
-    private _communityInfo: ICommunityInfo;
     private isImporting: boolean;
+    onSubmit: (tweets: ITweet[]) => Promise<void>;
     refreshPosts: () => Promise<void>;
 
-    constructor(communityInfo?: ICommunityInfo) {
+    constructor() {
         super();
-        this._communityInfo = communityInfo;
+        this.onSubmit = this.getAttribute('onSubmit', true);
     }
 
 
@@ -114,8 +88,9 @@ export class ImportTweetsModule extends Module {
     clear() {
     }
 
-    private async getTweets(username: string, since?: number, until?: number, maxTweets?: number) {
-
+    private async getTweets(username: string, since?: number, until?: number, maxTweets?: number): Promise<ITweet[]>{
+        
+        const api = await fetch('')
     }
 
     private async handleSearch() {
@@ -220,16 +195,9 @@ export class ImportTweetsModule extends Module {
         this.enableInputs(false);
         this.btnImport.rightIcon.spin = true;
         this.btnImport.rightIcon.visible = true;
-        this.isImporting = true;
+        this.isImporting = true
 
-        for (const tweet of this.checkedTweets) {
-            if (this._communityInfo) {
-                await this.syncTweetToCommunity(tweet, this._communityInfo);
-            }
-            else {
-                await this.syncTweet(tweet);
-            }
-        }
+        if(this.onsubmit)
 
         this.btnImport.rightIcon.spin = false;
         this.btnImport.rightIcon.visible = false;
@@ -470,7 +438,7 @@ export class ImportTweetsModule extends Module {
                         <i-stack direction="horizontal" justifyContent='space-between'>
                             <i-stack direction="horizontal" gap="0.25rem">
                                 <i-label caption="Tweets found: " />
-                                <i-label id="lbTweetsCount" />
+                                <i-label id="lbTweetsCount" caption=""/>
                             </i-stack>
                             <i-stack direction="horizontal" gap="0.25rem">
                                 <i-label caption="Selected: " />
@@ -513,4 +481,12 @@ export class ImportTweetsModule extends Module {
             </i-stack>
         )
     }
+}
+
+
+
+export {
+    TwitterManager,
+    ITweet,
+    Parser
 }
