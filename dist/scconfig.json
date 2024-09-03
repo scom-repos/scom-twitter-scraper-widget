@@ -3,6 +3,7 @@
     "type": "sdk",
     "version": "0.1.2",
     "dependencies": [
+        "@ijstech/components",
         "@scom/scom-scraper"
     ]
 }

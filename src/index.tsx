@@ -13,11 +13,10 @@ import {
     moment,
     Switch
 } from '@ijstech/components';
-import {TwitterManager} from "./managers/scraperManager";
-import {ITweet} from "./utils/interface";
+import { TwitterManager } from "./managers/scraperManager";
+import { ITweet } from "./utils/interface";
 import Parser from "./utils/parser";
-import { paginationStyle, tweetPreviewStyle } from './index.css.ts';
-import { ICommunityInfo } from "@scom/scom-social-sdk";
+import { paginationStyle, tweetPreviewStyle } from './index.css';
 const Theme = Styles.Theme.ThemeVars;
 
 const pageSize = 5;
@@ -42,6 +41,10 @@ declare global {
 interface ImportTweetsModuleElement extends ControlElement {
     refreshPosts: () => Promise<void>;
     onSubmit: (tweets: ITweet) => Promise<void>;
+}
+
+interface IImportTweetsOption {
+    scraperBotApiBaseUrl: string;
 }
 
 @customElements('scom-social--import-tweets-module')
@@ -72,14 +75,14 @@ export class ImportTweetsModule extends Module {
     private allTweets: ITweet[];
     private checkedTweets: ITweet[] = [];
     private isImporting: boolean;
+    private _scraperBotApiBaseUrl: string;
     onSubmit: (tweets: ITweet[]) => Promise<void>;
     refreshPosts: () => Promise<void>;
 
-    constructor() {
+    constructor(options: IImportTweetsOption) {
         super();
-        this.onSubmit = this.getAttribute('onSubmit', true);
+        this._scraperBotApiBaseUrl = options.scraperBotApiBaseUrl;
     }
-
 
     init() {
         super.init();
@@ -88,9 +91,32 @@ export class ImportTweetsModule extends Module {
     clear() {
     }
 
-    private async getTweets(username: string, since?: number, until?: number, maxTweets?: number): Promise<ITweet[]>{
-        
-        const api = await fetch('')
+    private async getTweets(username: string, since?: number, until?: number, maxTweets?: number): Promise<ITweet[]> {
+        if (!username) {
+            throw new Error("Username is required.");
+        }
+        const urlSearchParams = new URLSearchParams();
+        if (since !== undefined && until !== undefined) {
+            urlSearchParams.set('since', since.toString());
+            urlSearchParams.set('until', until.toString());
+        }
+        if (maxTweets !== undefined) {
+            urlSearchParams.set('maxTweets', maxTweets.toString());
+        }
+        const response = await fetch(`${this._scraperBotApiBaseUrl}/get-tweets?${urlSearchParams.toString()}`);
+        if (response.ok) {
+            const responseData = await response.json();
+            if (responseData.success) {
+                return responseData.tweets;
+            }
+            else {
+                throw new Error(responseData.message);
+            }
+        }
+        else {
+            throw new Error("Internal Server Error.");
+        }
+
     }
 
     private async handleSearch() {
@@ -131,48 +157,36 @@ export class ImportTweetsModule extends Module {
         this.chkAll.checked = false;
         this.lbSelectedTweetsCount.caption = '0';
         try {
-            const tweetsResult = await this.getTweets(xUsername, (dateRangeEnabled && since ? +since.toDate() : undefined), (dateRangeEnabled && til ? +til.toDate() : undefined), maxTweetsEnabled ? maxTweets : undefined);
+            const tweets = await this.getTweets(xUsername, (dateRangeEnabled && since ? +since.toDate() : undefined), (dateRangeEnabled && til ? +til.toDate() : undefined), maxTweetsEnabled ? maxTweets : undefined);
             this.pnlLoading.visible = false;
-            if (tweetsResult.success) {
-                const { tweets } = tweetsResult;
-                this.allTweets = tweets;
+            this.allTweets = tweets;
 
-                this.pgnTweets.pageSize = pageSize;
-                this.pgnTweets.totalPages = Math.ceil(tweets.length / 5);
-                this.pgnTweets.currentPage = 1;
-                this.pgnTweets.onPageChanged = this.handlePageChange.bind(this);
+            this.pgnTweets.pageSize = pageSize;
+            this.pgnTweets.totalPages = Math.ceil(tweets.length / 5);
+            this.pgnTweets.currentPage = 1;
+            this.pgnTweets.onPageChanged = this.handlePageChange.bind(this);
 
-                this.pnlResult.visible = true;
-                this.lbTweetsCount.caption = tweets?.length.toString();
-                // for (const tweet of tweets) {
-                //     this.tweetsList.append(this.renderTweet(tweet));
-                // }
-                const clonedTweets = [...tweets];
-                const currentPageTweets = clonedTweets.splice(0, 5);
-                for (const tweet of currentPageTweets) {
-                    this.tweetsList.append(this.renderTweet(tweet));
-                }
+            this.pnlResult.visible = true;
+            this.lbTweetsCount.caption = tweets?.length.toString();
+            // for (const tweet of tweets) {
+            //     this.tweetsList.append(this.renderTweet(tweet));
+            // }
+            const clonedTweets = [...tweets];
+            const currentPageTweets = clonedTweets.splice(0, 5);
+            for (const tweet of currentPageTweets) {
+                this.tweetsList.append(this.renderTweet(tweet));
             }
-            else {
-                this.pnlLoading.visible = false;
-                this.pnlFailed.visible = true;
-                this.lbFailedMessage.caption = tweetsResult.message;
-                setTimeout(() => {
-                    this.lbFailedMessage.caption = '';
-                    this.pnlFailed.visible = false;
-                    this.pnlSearch.visible = true;
-                }, 3000)
-            }
+
         }
-        catch(e) {
+        catch (e) {
             this.pnlLoading.visible = false;
-                this.pnlFailed.visible = true;
-                this.lbFailedMessage.caption = 'Failed to scrap tweets.';
-                setTimeout(() => {
-                    this.lbFailedMessage.caption = '';
-                    this.pnlFailed.visible = false;
-                    this.pnlSearch.visible = true;
-                }, 3000)
+            this.pnlFailed.visible = true;
+            this.lbFailedMessage.caption = 'Failed to scrap tweets.';
+            setTimeout(() => {
+                this.lbFailedMessage.caption = '';
+                this.pnlFailed.visible = false;
+                this.pnlSearch.visible = true;
+            }, 3000)
         }
     }
 
@@ -197,7 +211,9 @@ export class ImportTweetsModule extends Module {
         this.btnImport.rightIcon.visible = true;
         this.isImporting = true
 
-        if(this.onsubmit)
+        if (this.onSubmit) {
+            await this.onSubmit(this.checkedTweets);
+        }
 
         this.btnImport.rightIcon.spin = false;
         this.btnImport.rightIcon.visible = false;
@@ -438,7 +454,7 @@ export class ImportTweetsModule extends Module {
                         <i-stack direction="horizontal" justifyContent='space-between'>
                             <i-stack direction="horizontal" gap="0.25rem">
                                 <i-label caption="Tweets found: " />
-                                <i-label id="lbTweetsCount" caption=""/>
+                                <i-label id="lbTweetsCount" caption="" />
                             </i-stack>
                             <i-stack direction="horizontal" gap="0.25rem">
                                 <i-label caption="Selected: " />
