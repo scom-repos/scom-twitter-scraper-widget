@@ -13,15 +13,42 @@ import {
     moment,
     Switch
 } from '@ijstech/components';
-import { ITweet } from "./utils/interface";
 import { paginationStyle, tweetPreviewStyle, textCenterStyle } from './index.css';
-const Theme = Styles.Theme.ThemeVars;
 
+const Theme = Styles.Theme.ThemeVars;
 const pageSize = 5;
 
 interface IPhoto {
     id: string;
     url: string;
+}
+
+interface ITweet {
+    conversationId: string;
+    id: string;
+    hashtags: any[];
+    likes: number;
+    mentions: any[];
+    name: string;
+    permanentUrl: string;
+    photos: any[];
+    replies: number;
+    retweets: number;
+    text: string;
+    thread: any[];
+    urls: [];
+    userId: string;
+    username: string;
+    videos: any[];
+    isQuoted: boolean;
+    isReply: boolean;
+    isRetweet: boolean;
+    isPin: boolean;
+    sensitiveContent: boolean;
+    timeParsed: Date;
+    timestamp: number;
+    html: string;
+    views: number;
 }
 
 

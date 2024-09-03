@@ -1,8 +1,9 @@
 {
-    "name": "@scom/scom-twitter-scraper",
-    "type": "sdk",
-    "version": "0.1.2",
-    "dependencies": [
+    "type": "dapp",
+    "version": "0.1.1",
+    "packages": [
         "@ijstech/components"
-    ]
+    ],
+    "dependencies": {},
+    "moduleDir": "modules"
 }
