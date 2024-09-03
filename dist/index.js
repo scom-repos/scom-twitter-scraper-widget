@@ -29,6 +29,10 @@ define("@scom/scom-twitter-scraper-ui/index.css.ts", ["require", "exports", "@ij
         textAlign: 'center'
     });
 });
+define("@scom/scom-twitter-scraper-ui/interface.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+});
 define("@scom/scom-twitter-scraper-ui", ["require", "exports", "@ijstech/components", "@scom/scom-twitter-scraper-ui/index.css.ts"], function (require, exports, components_2, index_css_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });

@@ -14,43 +14,10 @@ import {
     Switch
 } from '@ijstech/components';
 import { paginationStyle, tweetPreviewStyle, textCenterStyle } from './index.css';
+import {ITweet, IPhoto} from "./interface";
 
 const Theme = Styles.Theme.ThemeVars;
 const pageSize = 5;
-
-interface IPhoto {
-    id: string;
-    url: string;
-}
-
-interface ITweet {
-    conversationId: string;
-    id: string;
-    hashtags: any[];
-    likes: number;
-    mentions: any[];
-    name: string;
-    permanentUrl: string;
-    photos: any[];
-    replies: number;
-    retweets: number;
-    text: string;
-    thread: any[];
-    urls: [];
-    userId: string;
-    username: string;
-    videos: any[];
-    isQuoted: boolean;
-    isReply: boolean;
-    isRetweet: boolean;
-    isPin: boolean;
-    sensitiveContent: boolean;
-    timeParsed: Date;
-    timestamp: number;
-    html: string;
-    views: number;
-}
-
 
 declare global {
     namespace JSX {

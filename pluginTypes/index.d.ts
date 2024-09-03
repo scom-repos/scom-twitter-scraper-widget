@@ -4,36 +4,45 @@ declare module "@scom/scom-twitter-scraper-ui/index.css.ts" {
     export const paginationStyle: string;
     export const textCenterStyle: string;
 }
-/// <amd-module name="@scom/scom-twitter-scraper-ui" />
-declare module "@scom/scom-twitter-scraper-ui" {
-    import { ControlElement, Module } from '@ijstech/components';
-    interface ITweet {
-        conversationId: string;
+/// <amd-module name="@scom/scom-twitter-scraper-ui/interface.ts" />
+declare module "@scom/scom-twitter-scraper-ui/interface.ts" {
+    export interface IPhoto {
         id: string;
+        url: string;
+    }
+    export interface ITweet {
+        conversationId: string;
         hashtags: any[];
-        likes: number;
-        mentions: any[];
-        name: string;
-        permanentUrl: string;
-        photos: any[];
-        replies: number;
-        retweets: number;
-        text: string;
-        thread: any[];
-        urls: [];
-        userId: string;
-        username: string;
-        videos: any[];
+        html: string;
+        id: string;
+        isPin: boolean;
         isQuoted: boolean;
         isReply: boolean;
         isRetweet: boolean;
-        isPin: boolean;
+        likes: number;
+        markdown: string;
+        mentions: any[];
+        name: string;
+        permanentUrl: string;
+        photos: IPhoto[];
+        replies: number;
+        retweets: number;
         sensitiveContent: boolean;
-        timeParsed: Date;
+        text: string;
+        thread: any[];
+        timeParsed: string;
         timestamp: number;
-        html: string;
+        urls: any[];
+        userId: string;
+        username: string;
+        videos: any[];
         views: number;
     }
+}
+/// <amd-module name="@scom/scom-twitter-scraper-ui" />
+declare module "@scom/scom-twitter-scraper-ui" {
+    import { ControlElement, Module } from '@ijstech/components';
+    import { ITweet } from "@scom/scom-twitter-scraper-ui/interface.ts";
     global {
         namespace JSX {
             interface IntrinsicElements {
