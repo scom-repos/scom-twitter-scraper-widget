@@ -13,10 +13,8 @@ import {
     moment,
     Switch
 } from '@ijstech/components';
-import { TwitterManager } from "./managers/scraperManager";
 import { ITweet } from "./utils/interface";
-import Parser from "./utils/parser";
-import { paginationStyle, tweetPreviewStyle } from './index.css';
+import { paginationStyle, tweetPreviewStyle, textCenterStyle } from './index.css';
 const Theme = Styles.Theme.ThemeVars;
 
 const pageSize = 5;
@@ -26,9 +24,6 @@ interface IPhoto {
     url: string;
 }
 
-const textCenterStyle = Styles.style({
-    textAlign: 'center'
-})
 
 declare global {
     namespace JSX {
@@ -116,7 +111,6 @@ export class ImportTweetsModule extends Module {
         else {
             throw new Error("Internal Server Error.");
         }
-
     }
 
     private async handleSearch() {
@@ -497,12 +491,4 @@ export class ImportTweetsModule extends Module {
             </i-stack>
         )
     }
-}
-
-
-
-export {
-    TwitterManager,
-    ITweet,
-    Parser
 }
