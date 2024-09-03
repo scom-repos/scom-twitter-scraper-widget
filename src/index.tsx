@@ -486,3 +486,8 @@ export class ImportTweetsModule extends Module {
         )
     }
 }
+
+export {
+    ITweet,
+    IPhoto
+}

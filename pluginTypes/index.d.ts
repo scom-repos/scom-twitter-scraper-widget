@@ -42,7 +42,7 @@ declare module "@scom/scom-twitter-scraper-ui/interface.ts" {
 /// <amd-module name="@scom/scom-twitter-scraper-ui" />
 declare module "@scom/scom-twitter-scraper-ui" {
     import { ControlElement, Module } from '@ijstech/components';
-    import { ITweet } from "@scom/scom-twitter-scraper-ui/interface.ts";
+    import { ITweet, IPhoto } from "@scom/scom-twitter-scraper-ui/interface.ts";
     global {
         namespace JSX {
             interface IntrinsicElements {
@@ -104,4 +104,5 @@ declare module "@scom/scom-twitter-scraper-ui" {
         renderTweet(tweet: any): any;
         render(): any;
     }
+    export { ITweet, IPhoto };
 }
