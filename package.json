@@ -1,7 +1,7 @@
 {
     "name": "@scom/scom-twitter-scraper-ui",
     "version": "0.1.2",
-    "main": "lib/index.js",
+    "main": "dist/index.js",
     "plugin": "dist",
     "pluginTypes": "pluginTypes/index.d.ts",
     "types": "types/index.d.ts",
@@ -22,7 +22,7 @@
         "typescript": "5.2.2"
     },
     "scripts": {
-        "build": "rm -rf dist && rm -rf lib && rm -rf pluginTypes && rm -rf types && tsc",
+        "build": "rm -rf dist && rm -rf lib && rm -rf pluginTypes && rm -rf types && npx @ijstech/compiler",
         "test": "mocha --ui tdd --exit --require ts-node/register test/*.spec.ts",
         "start": "ts-node ./test/test.ts"
     }
