@@ -1,9 +1,8 @@
 {
-    "type": "",
-    "version": "0.1.1",
-    "packages": [
+    "name": "@scom/scom-twitter-scraper-ui",
+    "type": "widget",
+    "version": "0.1.2",
+    "dependencies": [
         "@ijstech/components"
-    ],
-    "dependencies": {},
-    "moduleDir": "modules"
+    ]
 }
