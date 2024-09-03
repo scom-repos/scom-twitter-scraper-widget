@@ -1,5 +1,5 @@
 {
-    "type": "dapp",
+    "type": "",
     "version": "0.1.1",
     "packages": [
         "@ijstech/components"
