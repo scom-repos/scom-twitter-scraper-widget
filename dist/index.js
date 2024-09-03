@@ -40,15 +40,20 @@ define("@scom/scom-twitter-scraper-ui", ["require", "exports", "@ijstech/compone
     const Theme = components_2.Styles.Theme.ThemeVars;
     const pageSize = 5;
     let ImportTweetsModule = class ImportTweetsModule extends components_2.Module {
-        constructor(options) {
+        constructor() {
             super();
             this.checkedTweets = [];
-            this._scraperBotApiBaseUrl = options.scraperBotApiBaseUrl;
         }
         init() {
             super.init();
         }
         clear() {
+        }
+        set scraperBotApiBaseUrl(value) {
+            this._scraperBotApiBaseUrl = value;
+        }
+        get scraperBotApiBaseUrl() {
+            return this._scraperBotApiBaseUrl;
         }
         async getTweets(username, since, until, maxTweets) {
             if (!username) {

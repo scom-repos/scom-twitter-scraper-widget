@@ -54,9 +54,6 @@ declare module "@scom/scom-twitter-scraper-ui" {
         refreshPosts: () => Promise<void>;
         onSubmit: (tweets: ITweet) => Promise<void>;
     }
-    interface IImportTweetsOption {
-        scraperBotApiBaseUrl: string;
-    }
     export class ImportTweetsModule extends Module {
         private btnSearch;
         private btnBack;
@@ -86,9 +83,11 @@ declare module "@scom/scom-twitter-scraper-ui" {
         private _scraperBotApiBaseUrl;
         onSubmit: (tweets: ITweet[]) => Promise<void>;
         refreshPosts: () => Promise<void>;
-        constructor(options: IImportTweetsOption);
+        constructor();
         init(): void;
         clear(): void;
+        set scraperBotApiBaseUrl(value: string);
+        get scraperBotApiBaseUrl(): string;
         private getTweets;
         private handleSearch;
         private handlePageChange;

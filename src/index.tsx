@@ -68,9 +68,8 @@ export class ImportTweetsModule extends Module {
     onSubmit: (tweets: ITweet[]) => Promise<void>;
     refreshPosts: () => Promise<void>;
 
-    constructor(options: IImportTweetsOption) {
+    constructor() {
         super();
-        this._scraperBotApiBaseUrl = options.scraperBotApiBaseUrl;
     }
 
     init() {
@@ -78,6 +77,14 @@ export class ImportTweetsModule extends Module {
     }
 
     clear() {
+    }
+
+    set scraperBotApiBaseUrl(value: string) {
+        this._scraperBotApiBaseUrl = value;
+    }
+
+    get scraperBotApiBaseUrl() {
+        return this._scraperBotApiBaseUrl;
     }
 
     private async getTweets(username: string, since?: number, until?: number, maxTweets?: number): Promise<ITweet[]> {
