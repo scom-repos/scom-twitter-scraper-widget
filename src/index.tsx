@@ -22,20 +22,15 @@ const pageSize = 5;
 declare global {
     namespace JSX {
         interface IntrinsicElements {
-            ['scom-import-tweets-module']: ImportTweetsModuleElement;
+            ['i-scom-import-tweets-module']: ImportTweetsModuleElement;
         }
     }
 }
 
 interface ImportTweetsModuleElement extends ControlElement {
-    refreshPosts?: () => Promise<void>;
 }
 
-interface IImportTweetsOption {
-    scraperBotApiBaseUrl: string;
-}
-
-@customElements('scom-import-tweets-module')
+@customElements('i-scom-import-tweets-module')
 export class ImportTweetsModule extends Module {
     private btnSearch: Button;
     private btnBack: Button;

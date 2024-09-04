@@ -46,12 +46,11 @@ declare module "@scom/scom-twitter-scraper-ui" {
     global {
         namespace JSX {
             interface IntrinsicElements {
-                ['scom-import-tweets-module']: ImportTweetsModuleElement;
+                ['i-scom-import-tweets-module']: ImportTweetsModuleElement;
             }
         }
     }
     interface ImportTweetsModuleElement extends ControlElement {
-        refreshPosts?: () => Promise<void>;
     }
     export class ImportTweetsModule extends Module {
         private btnSearch;

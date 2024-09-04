@@ -360,7 +360,7 @@ define("@scom/scom-twitter-scraper-ui", ["require", "exports", "@ijstech/compone
         }
     };
     ImportTweetsModule = __decorate([
-        (0, components_2.customElements)('scom-import-tweets-module')
+        (0, components_2.customElements)('i-scom-import-tweets-module')
     ], ImportTweetsModule);
     exports.ImportTweetsModule = ImportTweetsModule;
 });

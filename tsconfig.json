@@ -10,20 +10,12 @@
         "resolveJsonModule": true,
         "forceConsistentCasingInFileNames": true,
         "removeComments": true,
-        "declarationDir": "types",
-        "declaration": true,
-        "outDir": "lib",
+        "declaration": false,
         "baseUrl": ".",
         "paths": {
-            "@ijstech/components": ["node_modules/@ijstech/components"],
-            "@scom/scom-twitter-scraper/*": ["./src/*"]
+            "@scom-twitter-scraper/*": ["./src/*"]
         }
     },
-    "include": [
-      "src/**/*"
-    ],
-    "exclude": [
-        "node_modules",
-        "test"
-    ]
+    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "exclude": ["node_modules"]
   }
