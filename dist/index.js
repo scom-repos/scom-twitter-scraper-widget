@@ -65,6 +65,7 @@ define("@scom/scom-twitter-scraper-ui", ["require", "exports", "@ijstech/compone
                 throw new Error("Username is required.");
             }
             const urlSearchParams = new URLSearchParams();
+            urlSearchParams.set('username', username);
             if (since !== undefined && until !== undefined) {
                 urlSearchParams.set('since', since.toString());
                 urlSearchParams.set('until', until.toString());
