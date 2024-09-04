@@ -1,5 +1,5 @@
 {
-    "name": "@scom/scom-twitter-scraper-ui",
+    "name": "@scom/scom-twitter-scraper-widget",
     "type": "widget",
     "version": "0.1.2",
     "dependencies": [

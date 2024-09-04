@@ -1,5 +1,5 @@
 {
-    "name": "@scom/scom-twitter-scraper-ui",
+    "name": "@scom/scom-twitter-scraper-widget",
     "version": "0.1.2",
     "main": "dist/index.js",
     "plugin": "dist",

@@ -1,11 +1,11 @@
-/// <amd-module name="@scom/scom-twitter-scraper-ui/index.css.ts" />
-declare module "@scom/scom-twitter-scraper-ui/index.css.ts" {
+/// <amd-module name="@scom/scom-twitter-scraper-widget/index.css.ts" />
+declare module "@scom/scom-twitter-scraper-widget/index.css.ts" {
     export const tweetPreviewStyle: string;
     export const paginationStyle: string;
     export const textCenterStyle: string;
 }
-/// <amd-module name="@scom/scom-twitter-scraper-ui/interface.ts" />
-declare module "@scom/scom-twitter-scraper-ui/interface.ts" {
+/// <amd-module name="@scom/scom-twitter-scraper-widget/interface.ts" />
+declare module "@scom/scom-twitter-scraper-widget/interface.ts" {
     export interface IPhoto {
         id: string;
         url: string;
@@ -39,10 +39,10 @@ declare module "@scom/scom-twitter-scraper-ui/interface.ts" {
         views: number;
     }
 }
-/// <amd-module name="@scom/scom-twitter-scraper-ui" />
-declare module "@scom/scom-twitter-scraper-ui" {
+/// <amd-module name="@scom/scom-twitter-scraper-widget" />
+declare module "@scom/scom-twitter-scraper-widget" {
     import { ControlElement, Module, Container } from '@ijstech/components';
-    import { ITweet, IPhoto } from "@scom/scom-twitter-scraper-ui/interface.ts";
+    import { ITweet, IPhoto } from "@scom/scom-twitter-scraper-widget/interface.ts";
     interface ImportTweetsModuleElement extends ControlElement {
     }
     global {
