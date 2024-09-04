@@ -41,16 +41,16 @@ declare module "@scom/scom-twitter-scraper-ui/interface.ts" {
 }
 /// <amd-module name="@scom/scom-twitter-scraper-ui" />
 declare module "@scom/scom-twitter-scraper-ui" {
-    import { ControlElement, Module } from '@ijstech/components';
+    import { ControlElement, Module, Container } from '@ijstech/components';
     import { ITweet, IPhoto } from "@scom/scom-twitter-scraper-ui/interface.ts";
+    interface ImportTweetsModuleElement extends ControlElement {
+    }
     global {
         namespace JSX {
             interface IntrinsicElements {
                 ['i-scom-import-tweets-module']: ImportTweetsModuleElement;
             }
         }
-    }
-    interface ImportTweetsModuleElement extends ControlElement {
     }
     export class ImportTweetsModule extends Module {
         private btnSearch;
@@ -81,7 +81,8 @@ declare module "@scom/scom-twitter-scraper-ui" {
         private _scraperBotApiBaseUrl;
         onSubmit: (tweets: ITweet[]) => Promise<void>;
         refreshPosts: () => Promise<void>;
-        constructor();
+        constructor(parent?: Container, options?: any);
+        static create(options?: ImportTweetsModuleElement, parent?: Container): Promise<ImportTweetsModule>;
         init(): void;
         clear(): void;
         set scraperBotApiBaseUrl(value: string);

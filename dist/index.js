@@ -40,9 +40,14 @@ define("@scom/scom-twitter-scraper-ui", ["require", "exports", "@ijstech/compone
     const Theme = components_2.Styles.Theme.ThemeVars;
     const pageSize = 5;
     let ImportTweetsModule = class ImportTweetsModule extends components_2.Module {
-        constructor() {
-            super();
+        constructor(parent, options) {
+            super(parent, options);
             this.checkedTweets = [];
+        }
+        static async create(options, parent) {
+            let self = new this(parent, options);
+            await self.ready();
+            return self;
         }
         init() {
             super.init();

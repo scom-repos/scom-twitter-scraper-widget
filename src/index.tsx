@@ -11,7 +11,8 @@ import {
     Datepicker,
     Pagination,
     moment,
-    Switch
+    Switch,
+    Container
 } from '@ijstech/components';
 import { paginationStyle, tweetPreviewStyle, textCenterStyle } from './index.css';
 import {ITweet, IPhoto} from "./interface";
@@ -19,15 +20,15 @@ import {ITweet, IPhoto} from "./interface";
 const Theme = Styles.Theme.ThemeVars;
 const pageSize = 5;
 
+interface ImportTweetsModuleElement extends ControlElement {
+}
+
 declare global {
     namespace JSX {
         interface IntrinsicElements {
             ['i-scom-import-tweets-module']: ImportTweetsModuleElement;
         }
     }
-}
-
-interface ImportTweetsModuleElement extends ControlElement {
 }
 
 @customElements('i-scom-import-tweets-module')
@@ -62,8 +63,14 @@ export class ImportTweetsModule extends Module {
     onSubmit: (tweets: ITweet[]) => Promise<void>;
     refreshPosts: () => Promise<void>;
 
-    constructor() {
-        super();
+    constructor(parent?: Container, options?: any) {
+        super(parent, options);
+    }
+
+    static async create(options?: ImportTweetsModuleElement, parent?: Container) {
+        let self = new this(parent, options);
+        await self.ready();
+        return self;
     }
 
     init() {
