@@ -93,7 +93,7 @@ export class ImportTweetsModule extends Module {
             throw new Error("Username is required.");
         }
         const urlSearchParams = new URLSearchParams();
-        urlSearchParams.set('username', username);
+        urlSearchParams.set('name', username);
         if (since !== undefined && until !== undefined) {
             urlSearchParams.set('since', since.toString());
             urlSearchParams.set('until', until.toString());
