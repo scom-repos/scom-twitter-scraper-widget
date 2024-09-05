@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="34" height="34" viewBox="0 0 34 34">
+  <g id="BSC_Mainnet" data-name="BSC Mainnet" transform="translate(0.152 0.247)">
+    <circle id="Ellipse_5665" data-name="Ellipse 5665" cx="17" cy="17" r="17" transform="translate(-0.152 -0.247)" fill="#f3ba2f"/>
+    <g id="Group_21413" data-name="Group 21413" transform="translate(3.28 3.486)">
+      <g id="Group_21409" data-name="Group 21409">
+        <path id="Path_25071" data-name="Path 25071" d="M1258.235,1261.316l5.23-5.23,5.23,5.235,3.043-3.043-8.273-8.278-8.273,8.273,3.043,3.043Zm-8.235,2.149,3.043-3.043,3.043,3.043-3.043,3.043Zm8.235,2.149,5.23,5.23,5.23-5.235,3.049,3.043h0l-8.279,8.279-8.273-8.273-.005-.005,3.049-3.038Zm12.609-2.149,3.043-3.043,3.043,3.043-3.043,3.043Z" transform="translate(-1250 -1250)" fill="#fff" fill-rule="evenodd"/>
+      </g>
+      <g id="Group_21410" data-name="Group 21410" transform="translate(10.061 10.061)">
+        <path id="Path_25072" data-name="Path 25072" d="M3124.8,3121.4h0l-3.393-3.4-2.51,2.515h0l-.291.291-.6.6,0,.006,0,.005,3.394,3.393,3.4-3.4h0Zm0,0Z" transform="translate(-3118 -3118)" fill="#fff" fill-rule="evenodd"/>
+      </g>
+    </g>
+  </g>
+</svg>

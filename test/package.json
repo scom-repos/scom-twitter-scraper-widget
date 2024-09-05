@@ -1,0 +1,25 @@
+{
+    "name": "@scom/demo-twitter-scraper-ui",
+    "version": "0.1.2",
+    "main": "dist/index.js",
+    "plugin": "dist",
+    "pluginTypes": "pluginTypes/index.d.ts",
+    "types": "types/index.d.ts",
+    "dependencies": {
+        "@ijstech/components": "^0.1.47",
+        "@ijstech/eth-wallet": "^0.1.35",
+        "@ijstech/eth-contract": "^0.1.14"
+    },
+    "devDependencies": {
+        "@ijstech/cli": "^0.1.28",
+        "@ijstech/compiler": "^0.1.22",
+        "@scom/dapp": "^0.1.11",
+        "@scom/scom-twitter-scraper-widget": "file:./ref"
+    },
+    "scripts": {
+        "cp:libs": "rm -rf ref && mkdir ref && cp ../package.json ref/package.json && cp -r ../dist ref/dist && cp -r ../pluginTypes ref/pluginTypes && cp -r ../pluginTypes ref/types",
+        "build": "npm run cp:libs && rm -rf dist && npx @ijstech/compiler",
+        "serve": "npx @ijstech/cli serve 8080",
+        "test": "npm run build && npm run serve"
+    }
+}

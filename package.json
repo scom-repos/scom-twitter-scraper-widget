@@ -22,7 +22,7 @@
     },
     "scripts": {
         "build": "rm -rf dist && rm -rf lib && rm -rf pluginTypes && rm -rf types && npx @ijstech/compiler",
-        "test": "mocha --ui tdd --exit --require ts-node/register test/*.spec.ts",
+        "test": "cd test && npm run test && cd ..",
         "start": "ts-node ./test/test.ts"
     }
 }

@@ -1,0 +1,9 @@
+{
+    "name": "@scom/scom-network-list",
+    "type": "sdk",
+    "version": "0.1.11",
+    "dependencies": [
+        "@ijstech/eth-contract",
+        "@ijstech/eth-wallet"
+    ]
+}

@@ -1,0 +1,194 @@
+{
+    "env": "testnet",
+    "main": "@scom/dapp",
+    "moduleDir": "modules",
+    "modules": {
+        "@modules/module1": {
+            "path": "module1",
+            "dependencies": [
+                "@scom/scom-twitter-scraper-widget"
+            ]
+        }
+    },
+    "dependencies": {
+        "@ijstech/eth-wallet": "*",
+        "@ijstech/eth-contract": "*",
+        "@scom/scom-network-list": "*",
+        "@scom/scom-multicall": "*",
+        "@scom/dapp": "*",
+        "@scom/scom-twitter-scraper-widget": "*"
+    },
+    "packages": [
+        "@scom/scom-twitter-scraper-widget",
+        "@ijstech/components",
+        "@ijstech/eth-contract",
+        "@ijstech/eth-wallet",
+        "@scom/dapp",
+        "@scom/scom-multicall",
+        "@scom/scom-network-list"
+    ],
+    "menus": [
+        {
+            "caption": "Module 1",
+            "url": "/module1",
+            "module": "@modules/module1"
+        }
+    ],
+    "routes": [
+        {
+            "url": "/module1",
+            "module": "@modules/module1",
+            "default": true
+        },
+        {
+            "url": "/module1(.*)",
+            "module": "@modules/module1"
+        }
+    ],
+    "themes": {
+        "default": "dark",
+        "light": {
+            "background": {
+                "modal": "#fff",
+                "main": "#fff"
+            },
+            "colors": {
+                "primary": {
+                    "contrastText": "#fff",
+                    "dark": "#1343bc",
+                    "light": "#4877ed",
+                    "main": "#1a54e8"
+                },
+                "secondary": {
+                    "contrastText": "rgba(0, 0, 0, 0.87)",
+                    "dark": "#d7d7d7",
+                    "light": "#e0e0e0",
+                    "main": "#e3e3e3"
+                },
+                "error": {
+                    "contrastText": "#fff",
+                    "dark": "#bc2213",
+                    "light": "#ed5748",
+                    "main": "#e82c1a"
+                },
+                "success": {
+                    "contrastText": "rgba(0, 0, 0, 0.87)",
+                    "dark": "#21b930",
+                    "light": "#5de36b",
+                    "main": "#32db43"
+                },
+                "warning": {
+                    "contrastText": "rgba(0, 0, 0, 0.87)",
+                    "dark": "#ea8b0d",
+                    "light": "#f7b866",
+                    "main": "#f4a236"
+                },
+                "info": {
+                    "contrastText": "#fff",
+                    "dark": "#137cbc",
+                    "light": "#48aeed",
+                    "main": "#1a9ae8"
+                }
+            },
+            "divider": "#e3e3e38a",
+            "layout": {
+                "container": {
+                    "maxWidth": "1400px"
+                }
+            },
+            "shadows": {
+                "2": "none"
+            },
+            "docs": {
+                "text0": "rgba(12, 18, 52, 1.00)",
+                "text1": "rgba(136, 153, 168, 1.00)"
+            },
+            "action": {
+                "active": "rgba(255, 255, 255, 1.00)",
+                "selected": "rgb(236, 239, 241)",
+                "hover": "rgb(236, 239, 241)",
+                "disabled": "#404040"
+            }
+        },
+        "dark": {
+            "background": {
+                "paper": "#1E1E1E",
+                "default": "#1E1E1E",
+                "main": "#1E1E1E",
+                "modal": "#161B22",
+                "gradient": "transparent linear-gradient(90deg, #AC1D78 0%, #E04862 100%) 0% 0% no-repeat padding-box"
+            },
+            "colors": {
+                "primary": {
+                    "contrastText": "#fff",
+                    "dark": "#F05E61",
+                    "light": "#f15e60e7",
+                    "main": "#FE8B10"
+                },
+                "secondary": {
+                    "contrastText": "#fff",
+                    "dark": "#3B3B3B",
+                    "light": "#2B2B2B",
+                    "main": "#272727"
+                },
+                "warning": {
+                    "dark": "#f57c00",
+                    "light": "#F6C958",
+                    "main": "#ffa726"
+                }
+            },
+            "divider": "#D9D9D9",
+            "layout": {
+                "container": {
+                    "maxWidth": "1400px"
+                }
+            },
+            "text": {
+                "secondary": "hsla(0, 0%, 100%, 0.55)",
+                "third": "#f7d064",
+                "disabled": "#fff"
+            },
+            "action": {
+                "active": "rgba(0, 0, 0, 0.54)",
+                "disabledBackground": "transparent linear-gradient(270deg,#351f52,#552a42) 0% 0% no-repeat padding-box",
+                "disabled": "#404040"
+            },
+            "shadows": {
+                "2": "rgb(255 255 255 / 8%) 0px 4px 12px"
+            },
+            "docs": {
+                "text0": "#fff",
+                "text1": "#fff"
+            },
+            "combobox": {
+                "background": "#272F39",
+                "fontColor": "#fff"
+            },
+            "input": {
+                "background": "#272F39",
+                "fontColor": "#fff"
+            }
+        }
+    },
+    "copyrightInfo": "&#169; 2024 IJS Technologies. All rights reserved.",
+    "version": "0.1.0-beta",
+    "breakpoints": {
+        "mobile": 414,
+        "tablet": 1280,
+        "desktop": 1920
+    },
+    "defaultChainId": 43113,
+    "networks": [
+        {
+            "chainId": 43113
+        },
+        {
+            "chainId": 97
+        }
+    ],
+    "wallets": [
+        {
+            "name": "metamask"
+        }
+    ]
+}
