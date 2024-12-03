@@ -33,7 +33,89 @@ define("@scom/scom-twitter-scraper-widget/interface.ts", ["require", "exports"],
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/components", "@scom/scom-twitter-scraper-widget/index.css.ts"], function (require, exports, components_2, index_css_1) {
+define("@scom/scom-twitter-scraper-widget/translations.json.ts", ["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    ///<amd-module name='@scom/scom-twitter-scraper-widget/translations.json.ts'/> 
+    exports.default = {
+        "en": {
+            "username_is_required": "Username is required.",
+            "internal_server_error": "Internal Server Error.",
+            "failed_to_scrap_tweets": "Failed to scrap tweets.",
+            "please_fill_in_the_date_range": "Please fill in the date range.",
+            "the_start_date_should_be_set_before_the_end_date": "The start date should be set before the end date.",
+            "maximum_tweets": "Maximum tweets",
+            "sync_tweets_between": "Sync tweets between",
+            "to": "To",
+            "search": "Search",
+            "back": "Back",
+            "import": "Import",
+            "tweets_found": "Tweets found: ",
+            "selected": "Selected: ",
+            "select_all": "Select all",
+            "import_tweets_to_your_community": "Import tweets to your community",
+            "x_username": "X username",
+            "your_x_username": "Your X username",
+            "warning_search_without_a_limit_may_take_a_long_time_if_the_account_has_a_lot_of_posts": "Warning, search without a limit may take a long time if the account has a lot of posts.",
+            "created_on": "Created on ",
+            "please_enter_maximum_tweets": "Please enter maximum tweets.",
+            "fetching_tweets_from_x": "Fetching tweets from X",
+            "the_max_number_of_tweets_will_be_included_starting_from_the_latest_tweet": "The max number of tweets will be included, starting from the latest tweet",
+            "tweets_before_or_after_than_this_date_range_will_not_be_included": "Tweets before or after than this date range will not be included.",
+        },
+        "zh-hant": {
+            "username_is_required": "用戶名為必填項。",
+            "internal_server_error": "內部伺服器錯誤。",
+            "failed_to_scrap_tweets": "無法獲取推文。",
+            "please_fill_in_the_date_range": "請填寫日期範圍。",
+            "the_start_date_should_be_set_before_the_end_date": "開始日期應在結束日期之前設置。",
+            "maximum_tweets": "最大推文數",
+            "sync_tweets_between": "在以下同步推文",
+            "to": "至",
+            "search": "搜索",
+            "back": "返回",
+            "import": "導入",
+            "tweets_found": "找到推文：",
+            "select_all": "全選",
+            "selected": "已選擇：",
+            "import_tweets_to_your_community": "導入推文到您的社群",
+            "x_username": "X 用戶名",
+            "your_x_username": "您的 X 用戶名",
+            "warning_search_without_a_limit_may_take_a_long_time_if_the_account_has_a_lot_of_posts": "警告，如果帳戶有很多帖子，無限制搜索可能需要很長時間。",
+            "created_on": "創建於",
+            "please_enter_maximum_tweets": "請輸入最大推文數。",
+            "fetching_tweets_from_x": "正在從 X 獲取推文",
+            "the_max_number_of_tweets_will_be_included_starting_from_the_latest_tweet": "最大推文數將從最新推文開始包含",
+            "tweets_before_or_after_than_this_date_range_will_not_be_included": "此日期範圍之前或之後的推文將不包括在內。",
+        },
+        "vi": {
+            "username_is_required": "Tên người dùng là bắt buộc.",
+            "internal_server_error": "Lỗi máy chủ nội bộ.",
+            "failed_to_scrap_tweets": "Lỗi khi lấy tweet.",
+            "please_fill_in_the_date_range": "Vui lòng điền phạm vi thời gian.",
+            "the_start_date_should_be_set_before_the_end_date": "Ngày bắt đầu phải được đặt trước ngày kết thúc.",
+            "maximum_tweets": "Số lượng tweet tối đa",
+            "sync_tweets_between": "Đồng bộ giữa các tweet",
+            "to": "đến",
+            "search": "Tìm kiếm",
+            "back": "Quay lại",
+            "import": "Nhập về",
+            "tweets_found": "Các tweet được tìm thấy:",
+            "selected": "Đã chọn:",
+            "select_all": "Chọn tất cả",
+            "import_tweets_to_your_community": "Nhập tweet vào cộng đồng của bạn",
+            "x_username": "Tên người dùng X",
+            "your_x_username": "Tên người dùng X của bạn",
+            "warning_search_without_a_limit_may_take_a_long_time_if_the_account_has_a_lot_of_posts": "Cảnh báo, việc tìm kiếm không có giới hạn có thể mất nhiều thời gian nếu tài khoản có nhiều bài đăng.",
+            "created_on": "Được tạo ngày",
+            "please_enter_maximum_tweets": "Vui lòng nhập số lượng tweet tối đa.",
+            "fetching_tweets_from_x": "Đang lấy tweet từ X",
+            "the_max_number_of_tweets_will_be_included_starting_from_the_latest_tweet": "Số lượng tweet tối đa sẽ được bao gồm, bắt đầu từ tweet mới nhất.",
+            "tweets_before_or_after_than_this_date_range_will_not_be_included": "Không bao gồm các tweet trước hoặc sau khoảng thời gian này.",
+        }
+    };
+});
+define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/components", "@scom/scom-twitter-scraper-widget/index.css.ts", "@scom/scom-twitter-scraper-widget/translations.json.ts"], function (require, exports, components_2, index_css_1, translations_json_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.ImportTweetsModule = void 0;
@@ -50,6 +132,7 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
             return self;
         }
         init() {
+            this.i18n.init({ ...translations_json_1.default });
             super.init();
         }
         clear() {
@@ -62,7 +145,7 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
         }
         async getTweets(username, since, until, maxTweets) {
             if (!username) {
-                throw new Error("Username is required.");
+                throw new Error("$username_is_required");
             }
             const urlSearchParams = new URLSearchParams();
             urlSearchParams.set('name', username);
@@ -84,7 +167,7 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
                 }
             }
             else {
-                throw new Error("Internal Server Error.");
+                throw new Error("$internal_server_error");
             }
         }
         async handleSearch() {
@@ -104,12 +187,12 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
             }
             if (dateRangeEnabled && (!since || !til)) {
                 this.lbDateRangeError.visible = true;
-                this.lbDateRangeError.caption = "Please fill in the date range.";
+                this.lbDateRangeError.caption = "$please_fill_in_the_date_range";
                 isFormInvalid = true;
             }
             else if (dateRangeEnabled && since && til && since.isAfter(til)) {
                 this.lbDateRangeError.visible = true;
-                this.lbDateRangeError.caption = "The start date should be set before the end date.";
+                this.lbDateRangeError.caption = "$the_start_date_should_be_set_before_the_end_date";
                 isFormInvalid = true;
             }
             else {
@@ -145,7 +228,7 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
             catch (e) {
                 this.pnlLoading.visible = false;
                 this.pnlFailed.visible = true;
-                this.lbFailedMessage.caption = 'Failed to scrap tweets.';
+                this.lbFailedMessage.caption = '$failed_to_scrap_tweets';
                 setTimeout(() => {
                     this.lbFailedMessage.caption = '';
                     this.pnlFailed.visible = false;
@@ -298,7 +381,7 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
                 } },
                 this.$render("i-stack", { direction: "vertical", gap: "0.25rem" },
                     this.$render("i-stack", { direction: "horizontal", justifyContent: "end" },
-                        this.$render("i-label", { caption: `Created on ${(0, components_2.moment)(tweet.timeParsed).format('DD/MM/YYYY')}`, font: { color: Theme.text.secondary, style: "italic" } })),
+                        this.$render("i-label", { caption: `${this.i18n.get('$created_on')} ${(0, components_2.moment)(tweet.timeParsed).format('DD/MM/YYYY')}`, font: { color: Theme.text.secondary, style: "italic" } })),
                     this.$render("i-label", { caption: tweet.text.replace(linkRegex, '') })));
             gridLayout.prepend(checkbox);
             return gridLayout;
@@ -308,41 +391,41 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
                 this.$render("i-stack", { direction: "vertical", id: "pnlSearch", gap: "0.25rem" },
                     this.$render("i-stack", { id: "pnlInfo", direction: "vertical", gap: "1rem" },
                         this.$render("i-stack", { id: "pnlName", direction: "vertical", gap: "0.5rem" },
-                            this.$render("i-panel", null,
-                                this.$render("i-label", { display: "inline", caption: "X username " }),
+                            this.$render("i-hstack", { verticalAlignment: 'center', gap: "0.25rem" },
+                                this.$render("i-label", { display: "inline", caption: "$x_username" }),
                                 this.$render("i-label", { display: "inline", caption: "*", font: { color: Theme.colors.error.main } })),
                             this.$render("i-input", { id: "edtName", width: "100%", height: 32, padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, maxLength: 150, onChanged: this.onNameChanged, placeholder: "elonmusk" }),
-                            this.$render("i-label", { id: "lblNameHint", caption: "Your X username", font: { size: '0.875rem', color: Theme.text.secondary } })),
+                            this.$render("i-label", { id: "lblNameHint", caption: "$your_x_username", font: { size: '0.875rem', color: Theme.text.secondary } })),
                         this.$render("i-stack", { direction: "vertical", gap: "0.5rem" },
                             this.$render("i-stack", { id: "pnlLeaderboard", direction: "vertical", gap: "1rem" },
                                 this.$render("i-stack", { direction: "horizontal", gap: 10, alignItems: "center" },
                                     this.$render("i-switch", { id: "switchMaxTweets", onChanged: this.handleSwitchMaxTweetsChanged, checked: true }),
                                     this.$render("i-stack", { direction: "vertical", gap: 5, width: '100%' },
                                         this.$render("i-stack", { direction: "horizontal", gap: 5 },
-                                            this.$render("i-label", { caption: "Maximum tweets" }),
-                                            this.$render("i-icon", { name: "question-circle", width: Theme.typography.fontSize, height: Theme.typography.fontSize, tooltip: { content: "The max number of tweet will be included, starting from the latest tweet", placement: "rightTop" } })),
+                                            this.$render("i-label", { caption: "$maximum_tweets" }),
+                                            this.$render("i-icon", { name: "question-circle", width: Theme.typography.fontSize, height: Theme.typography.fontSize, tooltip: { content: "$the_max_number_of_tweets_will_be_included_starting_from_the_latest_tweet", placement: "rightTop" } })),
                                         this.$render("i-input", { id: "edtMaxTweets", width: "100%", height: 32, padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, maxLength: 150, value: "50" }),
-                                        this.$render("i-label", { id: "lbMaxTweetsError", visible: false, caption: "Please enter maximum tweets.", font: { color: Theme.colors.error.main } }),
-                                        this.$render("i-label", { id: "lbWarn", visible: false, caption: "Warning, search without a limit may take a long time if the account has a lot of posts.", font: { color: Theme.colors.warning.main } }))),
+                                        this.$render("i-label", { id: "lbMaxTweetsError", visible: false, caption: "$please_enter_maximum_tweets", font: { color: Theme.colors.error.main } }),
+                                        this.$render("i-label", { id: "lbWarn", visible: false, caption: "$warning_search_without_a_limit_may_take_a_long_time_if_the_account_has_a_lot_of_posts", font: { color: Theme.colors.warning.main } }))),
                                 this.$render("i-stack", { direction: "horizontal", gap: 10, alignItems: "center" },
                                     this.$render("i-switch", { id: "switchSince", onChanged: this.handleSwitchSinceChanged, uncheckedTrackColor: Theme.action.focusBackground, checkedTrackColor: Theme.colors.info.main }),
                                     this.$render("i-stack", { direction: "vertical", gap: 5, width: '100%' },
                                         this.$render("i-stack", { direction: "horizontal", gap: 5 },
-                                            this.$render("i-label", { caption: "Sync tweets between" }),
-                                            this.$render("i-icon", { name: "question-circle", width: Theme.typography.fontSize, height: Theme.typography.fontSize, tooltip: { content: "Tweets before or after than this date range will not be included.", placement: "rightTop" } })),
+                                            this.$render("i-label", { caption: "$sync_tweets_between" }),
+                                            this.$render("i-icon", { name: "question-circle", width: Theme.typography.fontSize, height: Theme.typography.fontSize, tooltip: { content: "$tweets_before_or_after_than_this_date_range_will_not_be_included", placement: "rightTop" } })),
                                         this.$render("i-stack", { direction: "horizontal", width: '100%', gap: 10, alignItems: "center" },
                                             this.$render("i-stack", { direction: "vertical", gap: 2 },
                                                 this.$render("i-datepicker", { id: "edtSince", width: "100%", height: 32, padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, enabled: false, background: { color: Theme.action.disabledBackground } })),
-                                            this.$render("i-label", { caption: "To", width: 50, class: index_css_1.textCenterStyle }),
+                                            this.$render("i-label", { caption: "$to", width: 50, class: index_css_1.textCenterStyle }),
                                             this.$render("i-stack", { direction: "vertical", gap: 2 },
                                                 this.$render("i-datepicker", { id: "edtTil", width: "100%", height: 32, padding: { left: '0.5rem', right: '0.5rem' }, border: { radius: 5 }, enabled: false, background: { color: Theme.action.disabledBackground } }))),
                                         this.$render("i-label", { id: "lbDateRangeError", visible: false, font: { color: Theme.colors.error.main } })))))),
                     this.$render("i-stack", { direction: 'horizontal', justifyContent: 'end', alignItems: 'center', gap: "0.25rem" },
-                        this.$render("i-button", { id: "btnSearch", enabled: false, minHeight: 36, minWidth: 120, caption: "Search", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, margin: { top: '0.25rem', bottom: '0.5rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleSearch }))),
+                        this.$render("i-button", { id: "btnSearch", enabled: false, minHeight: 36, minWidth: 120, caption: "$search", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, margin: { top: '0.25rem', bottom: '0.5rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleSearch }))),
                 this.$render("i-panel", { id: "pnlLoading", visible: false, height: 200 },
                     this.$render("i-stack", { height: "100%", direction: "vertical", gap: "0.5rem", alignItems: "center", justifyContent: 'center' },
                         this.$render("i-icon", { name: "spinner", width: 24, height: 24, spin: true }),
-                        this.$render("i-label", { caption: "Fetching tweets from X", font: { size: "24px" } }))),
+                        this.$render("i-label", { caption: "$fetching_tweets_from_x", font: { size: "24px" } }))),
                 this.$render("i-panel", { id: "pnlFailed", visible: false, height: 200 },
                     this.$render("i-stack", { height: "100%", direction: "vertical", gap: "0.5rem", alignItems: "center", justifyContent: 'center' },
                         this.$render("i-icon", { name: "times-circle", width: 24, height: 24, fill: Theme.colors.error.main }),
@@ -351,18 +434,18 @@ define("@scom/scom-twitter-scraper-widget", ["require", "exports", "@ijstech/com
                     this.$render("i-stack", { direction: "vertical", gap: "0.5rem" },
                         this.$render("i-stack", { direction: "horizontal", justifyContent: 'space-between' },
                             this.$render("i-stack", { direction: "horizontal", gap: "0.25rem" },
-                                this.$render("i-label", { caption: "Tweets found: " }),
+                                this.$render("i-label", { caption: "$tweets_found" }),
                                 this.$render("i-label", { id: "lbTweetsCount", caption: "" })),
                             this.$render("i-stack", { direction: "horizontal", gap: "0.25rem" },
-                                this.$render("i-label", { caption: "Selected: " }),
+                                this.$render("i-label", { caption: "$selected" }),
                                 this.$render("i-label", { id: "lbSelectedTweetsCount", caption: "0" }))),
-                        this.$render("i-checkbox", { id: "chkAll", onChanged: this.handleCheckAllChanged, caption: "Select all" }),
+                        this.$render("i-checkbox", { id: "chkAll", onChanged: this.handleCheckAllChanged, caption: "$select_all" }),
                         this.$render("i-stack", { id: "tweetsList", gap: "0.5rem", direction: "vertical" }),
                         this.$render("i-stack", { direction: "horizontal", justifyContent: "center" },
                             this.$render("i-pagination", { id: "pgnTweets", class: index_css_1.paginationStyle }))),
                     this.$render("i-stack", { direction: 'horizontal', justifyContent: 'end', alignItems: 'center', gap: "0.25rem", margin: { top: 5 } },
-                        this.$render("i-button", { id: "btnBack", enabled: true, minHeight: 36, minWidth: 120, caption: "Back", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, margin: { top: '0.25rem', bottom: '0.5rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleBackClick }),
-                        this.$render("i-button", { id: "btnImport", enabled: false, minHeight: 36, minWidth: 120, caption: "Import", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, margin: { top: '0.25rem', bottom: '0.5rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleSubmit })))));
+                        this.$render("i-button", { id: "btnBack", enabled: true, minHeight: 36, minWidth: 120, caption: "$back", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, margin: { top: '0.25rem', bottom: '0.5rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleBackClick }),
+                        this.$render("i-button", { id: "btnImport", enabled: false, minHeight: 36, minWidth: 120, caption: "$import", border: { radius: 18 }, padding: { top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }, margin: { top: '0.25rem', bottom: '0.5rem' }, font: { color: Theme.colors.primary.contrastText, bold: true }, onClick: this.handleSubmit })))));
         }
     };
     ImportTweetsModule = __decorate([
