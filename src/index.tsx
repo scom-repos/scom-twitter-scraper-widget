@@ -16,6 +16,7 @@ import {
 } from '@ijstech/components';
 import { paginationStyle, tweetPreviewStyle, textCenterStyle } from './index.css';
 import {ITweet, IPhoto} from "./interface";
+import translations from './translations.json';
 
 const Theme = Styles.Theme.ThemeVars;
 const pageSize = 5;
@@ -74,6 +75,7 @@ export class ImportTweetsModule extends Module {
     }
 
     init() {
+        this.i18n.init({...translations});
         super.init();
     }
 
@@ -90,7 +92,7 @@ export class ImportTweetsModule extends Module {
 
     private async getTweets(username: string, since?: number, until?: number, maxTweets?: number): Promise<ITweet[]> {
         if (!username) {
-            throw new Error("Username is required.");
+            throw new Error("$username_is_required");
         }
         const urlSearchParams = new URLSearchParams();
         urlSearchParams.set('name', username);
@@ -112,7 +114,7 @@ export class ImportTweetsModule extends Module {
             }
         }
         else {
-            throw new Error("Internal Server Error.");
+            throw new Error("$internal_server_error");
         }
     }
 
@@ -134,12 +136,12 @@ export class ImportTweetsModule extends Module {
 
         if (dateRangeEnabled && (!since || !til)) {
             this.lbDateRangeError.visible = true;
-            this.lbDateRangeError.caption = "Please fill in the date range."
+            this.lbDateRangeError.caption = "$please_fill_in_the_date_range"
             isFormInvalid = true;
         }
         else if (dateRangeEnabled && since && til && since.isAfter(til)) {
             this.lbDateRangeError.visible = true;
-            this.lbDateRangeError.caption = "The start date should be set before the end date."
+            this.lbDateRangeError.caption = "$the_start_date_should_be_set_before_the_end_date"
             isFormInvalid = true;
         }
         else {
@@ -178,7 +180,7 @@ export class ImportTweetsModule extends Module {
         catch (e) {
             this.pnlLoading.visible = false;
             this.pnlFailed.visible = true;
-            this.lbFailedMessage.caption = 'Failed to scrap tweets.';
+            this.lbFailedMessage.caption = '$failed_to_scrap_tweets';
             setTimeout(() => {
                 this.lbFailedMessage.caption = '';
                 this.pnlFailed.visible = false;
@@ -347,7 +349,10 @@ export class ImportTweetsModule extends Module {
         }}>
             <i-stack direction="vertical" gap="0.25rem">
                 <i-stack direction="horizontal" justifyContent="end">
-                    <i-label caption={`Created on ${moment(tweet.timeParsed).format('DD/MM/YYYY')}`} font={{ color: Theme.text.secondary, style: "italic" }} />
+                    <i-label
+                        caption={`${this.i18n.get('$created_on')} ${moment(tweet.timeParsed).format('DD/MM/YYYY')}`}
+                        font={{ color: Theme.text.secondary, style: "italic" }}
+                    />
                 </i-stack>
                 <i-label caption={tweet.text.replace(linkRegex, '')} />
             </i-stack>
@@ -362,12 +367,12 @@ export class ImportTweetsModule extends Module {
                 <i-stack direction="vertical" id="pnlSearch" gap="0.25rem">
                     <i-stack id="pnlInfo" direction="vertical" gap="1rem">
                         <i-stack id="pnlName" direction="vertical" gap="0.5rem">
-                            <i-panel>
-                                <i-label display="inline" caption="X username "></i-label>
+                            <i-hstack verticalAlignment='center' gap="0.25rem">
+                                <i-label display="inline" caption="$x_username"></i-label>
                                 <i-label display="inline" caption="*" font={{ color: Theme.colors.error.main }}></i-label>
-                            </i-panel>
+                            </i-hstack>
                             <i-input id="edtName" width="100%" height={32} padding={{ left: '0.5rem', right: '0.5rem' }} border={{ radius: 5 }} maxLength={150} onChanged={this.onNameChanged} placeholder="elonmusk"></i-input>
-                            <i-label id="lblNameHint" caption="Your X username" font={{ size: '0.875rem', color: Theme.text.secondary }}></i-label>
+                            <i-label id="lblNameHint" caption="$your_x_username" font={{ size: '0.875rem', color: Theme.text.secondary }}></i-label>
                         </i-stack>
                         <i-stack direction="vertical" gap="0.5rem">
                             <i-stack id="pnlLeaderboard" direction="vertical" gap="1rem">
@@ -375,12 +380,12 @@ export class ImportTweetsModule extends Module {
                                     <i-switch id="switchMaxTweets" onChanged={this.handleSwitchMaxTweetsChanged} checked={true}></i-switch>
                                     <i-stack direction="vertical" gap={5} width={'100%'}>
                                         <i-stack direction="horizontal" gap={5}>
-                                            <i-label caption="Maximum tweets" />
-                                            <i-icon name="question-circle" width={Theme.typography.fontSize} height={Theme.typography.fontSize} tooltip={{ content: "The max number of tweet will be included, starting from the latest tweet", placement: "rightTop" }} />
+                                            <i-label caption="$maximum_tweets" />
+                                            <i-icon name="question-circle" width={Theme.typography.fontSize} height={Theme.typography.fontSize} tooltip={{ content: "$the_max_number_of_tweets_will_be_included_starting_from_the_latest_tweet", placement: "rightTop" }} />
                                         </i-stack>
                                         <i-input id="edtMaxTweets" width="100%" height={32} padding={{ left: '0.5rem', right: '0.5rem' }} border={{ radius: 5 }} maxLength={150} value="50"></i-input>
-                                        <i-label id="lbMaxTweetsError" visible={false} caption="Please enter maximum tweets." font={{ color: Theme.colors.error.main }} />
-                                        <i-label id="lbWarn" visible={false} caption="Warning, search without a limit may take a long time if the account has a lot of posts." font={{ color: Theme.colors.warning.main }} />
+                                        <i-label id="lbMaxTweetsError" visible={false} caption="$please_enter_maximum_tweets" font={{ color: Theme.colors.error.main }} />
+                                        <i-label id="lbWarn" visible={false} caption="$warning_search_without_a_limit_may_take_a_long_time_if_the_account_has_a_lot_of_posts" font={{ color: Theme.colors.warning.main }} />
                                     </i-stack>
                                 </i-stack>
 
@@ -389,14 +394,19 @@ export class ImportTweetsModule extends Module {
                                     <i-switch id="switchSince" onChanged={this.handleSwitchSinceChanged} uncheckedTrackColor={Theme.action.focusBackground} checkedTrackColor={Theme.colors.info.main} />
                                     <i-stack direction="vertical" gap={5} width={'100%'}>
                                         <i-stack direction="horizontal" gap={5}>
-                                            <i-label caption="Sync tweets between" />
-                                            <i-icon name="question-circle" width={Theme.typography.fontSize} height={Theme.typography.fontSize} tooltip={{ content: "Tweets before or after than this date range will not be included.", placement: "rightTop" }} />
+                                            <i-label caption="$sync_tweets_between" />
+                                            <i-icon
+                                                name="question-circle"
+                                                width={Theme.typography.fontSize}
+                                                height={Theme.typography.fontSize}
+                                                tooltip={{ content: "$tweets_before_or_after_than_this_date_range_will_not_be_included", placement: "rightTop" }}
+                                            />
                                         </i-stack>
                                         <i-stack direction="horizontal" width={'100%'} gap={10} alignItems="center">
                                             <i-stack direction="vertical" gap={2}>
                                                 <i-datepicker id="edtSince" width="100%" height={32} padding={{ left: '0.5rem', right: '0.5rem' }} border={{ radius: 5 }} enabled={false} background={{ color: Theme.action.disabledBackground }}></i-datepicker>
                                             </i-stack>
-                                            <i-label caption="To" width={50} class={textCenterStyle} />
+                                            <i-label caption="$to" width={50} class={textCenterStyle} />
                                             <i-stack direction="vertical" gap={2}>
                                                 <i-datepicker id="edtTil" width="100%" height={32} padding={{ left: '0.5rem', right: '0.5rem' }} border={{ radius: 5 }} enabled={false} background={{ color: Theme.action.disabledBackground }}></i-datepicker>
                                             </i-stack>
@@ -413,7 +423,7 @@ export class ImportTweetsModule extends Module {
                             enabled={false}
                             minHeight={36}
                             minWidth={120}
-                            caption="Search"
+                            caption="$search"
                             border={{ radius: 18 }}
                             padding={{ top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }}
                             margin={{ top: '0.25rem', bottom: '0.5rem' }}
@@ -437,7 +447,7 @@ export class ImportTweetsModule extends Module {
                 <i-panel id="pnlLoading" visible={false} height={200}>
                     <i-stack height="100%" direction="vertical" gap="0.5rem" alignItems="center" justifyContent='center'>
                         <i-icon name="spinner" width={24} height={24} spin={true} />
-                        <i-label caption="Fetching tweets from X" font={{ size: "24px" }} />
+                        <i-label caption="$fetching_tweets_from_x" font={{ size: "24px" }} />
                     </i-stack>
                 </i-panel>
                 <i-panel id="pnlFailed" visible={false} height={200}>
@@ -450,15 +460,15 @@ export class ImportTweetsModule extends Module {
                     <i-stack direction="vertical" gap="0.5rem">
                         <i-stack direction="horizontal" justifyContent='space-between'>
                             <i-stack direction="horizontal" gap="0.25rem">
-                                <i-label caption="Tweets found: " />
+                                <i-label caption="$tweets_found" />
                                 <i-label id="lbTweetsCount" caption="" />
                             </i-stack>
                             <i-stack direction="horizontal" gap="0.25rem">
-                                <i-label caption="Selected: " />
+                                <i-label caption="$selected" />
                                 <i-label id="lbSelectedTweetsCount" caption="0" />
                             </i-stack>
                         </i-stack>
-                        <i-checkbox id="chkAll" onChanged={this.handleCheckAllChanged} caption="Select all" />
+                        <i-checkbox id="chkAll" onChanged={this.handleCheckAllChanged} caption="$select_all" />
                         <i-stack id="tweetsList" gap="0.5rem" direction="vertical" />
                         <i-stack direction="horizontal" justifyContent="center">
                             <i-pagination id="pgnTweets" class={paginationStyle} />
@@ -470,7 +480,7 @@ export class ImportTweetsModule extends Module {
                             enabled={true}
                             minHeight={36}
                             minWidth={120}
-                            caption="Back"
+                            caption="$back"
                             border={{ radius: 18 }}
                             padding={{ top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }}
                             margin={{ top: '0.25rem', bottom: '0.5rem' }}
@@ -482,7 +492,7 @@ export class ImportTweetsModule extends Module {
                             enabled={false}
                             minHeight={36}
                             minWidth={120}
-                            caption="Import"
+                            caption="$import"
                             border={{ radius: 18 }}
                             padding={{ top: '0.25rem', bottom: '0.25rem', left: '1rem', right: '1rem' }}
                             margin={{ top: '0.25rem', bottom: '0.5rem' }}
